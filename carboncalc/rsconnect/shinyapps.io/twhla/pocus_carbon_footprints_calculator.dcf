@@ -1,0 +1,13 @@
+name: pocus_carbon_footprints_calculator
+title: pocus_carbon_footprints_calculator
+username:
+account: twhla
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9135139
+bundleId: 7233025
+url: https://twhla.shinyapps.io/pocus_carbon_footprints_calculator/
+when: 1684399331.622
+lastSyncTime: 1684399331.62201
+asMultiple: FALSE
+asStatic: FALSE
