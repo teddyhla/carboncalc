@@ -7,73 +7,128 @@
 
 # DEPENDENCIES 
 library(shiny)
-library(shinythemes)
+
 
 # Define UI for application that draws a histogram
-ui <- fluidPage(theme = shinytheme("lumen"),
+ui <- fluidPage(theme = shinythemes::shinytheme("lumen"),
 
     # Application title
     titlePanel("Carbon cost of Local vs. International POCUS courses"),
     
     #horizontal panel
     hr(),
+    
+    br(),
+    tabsetPanel(
+            tabPanel("Simulations",
+                     br(),
+                    sidebarLayout(
+                            sidebarPanel("Please select variables", width=2,
+                                         br(),
+                                         br(),
+                                         radioButtons("defset","Settings:", choices= c(
+                                                 "Local" = "loc",
+                                                 "International" = "intl"
+                                         )),
+                                         br(),
+                                         numericInput("attnd",
+                                                     "Variable 1: Number of attendees:",
+                                                     min = 1,
+                                                     max = 200,
+                                                     step = 1,
+                                                     value = 30),
+                                         numericInput("fac",
+                                                     "Variable 2: Number of faculty:",
+                                                     min = 1,
+                                                     max = 20,
+                                                     value = 5),
+                                         uiOutput("uiv3"),
+                                         uiOutput("uiv4"),
+                                         uiOutput("uiv5"),
+                                         numericInput("mu_loc","Variable 6: Mean distance for local in km",
+                                                      value = 50, min = 5, max = 100,step = 5),
+                                         numericInput("mu_int","Variable 7: Mean distance for international in km",
+                                                      value = 500, min = 150, max = 1500,step = 50)
+                                         
+                            ),
+                            
+                            # Show a plot of the generated distribution
+                            mainPanel(
+                                    plotOutput("distPlot")
+                            )
+                    )
+            ),
+            tabPanel("User Guide & Assumptions",
+                     fluidRow(h4("Assumptions"),offset=2),# may be a card
+                     fluidRow(h4("User Guide"),offset=2 ) # may be a card
+                     )
+    )
 
     # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel("Please select variables",
-                br(),
-                     br(),
-            sliderInput("attnd",
-                        "Variable 1: Number of attendees:",
-                        min = 1,
-                        max = 200,
-                        value = 30),
-                br(),
-            sliderInput("fac",
-                        "Variable 2: Number of faculty:",
-                        min = 1,
-                        max = 20,
-                        value = 5),
-            br(),
-            sliderInput("p_attnd",
-                        "Variable 3: Percentage of international attendees",
-                        min = 0,
-                        max = 100,
-                        value = 50),
-            br(),
-            sliderInput("fac_attnd",
-                        "Variable 4: Percentage of international faculty",
-                        min = 0,
-                        max = 100,
-                        value = 50),
-            numericInput("mu_loc","Variable 5: Mean distance for local in km",
-                         value = 50, min = 5, max = 100,step = 5),
-            br(),
-            numericInput("mu_int","Variable 6: Mean distance for international in km",
-                         value = 500, min = 150, max = 1500,step = 50)
-                
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-           plotOutput("distPlot")
-        )
-    )
+    
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+        output$uiv3 <- renderUI({
+                if (is.null(input$defset)) 
+                       return()
+                switch(input$defset,
+                       "loc" = sliderInput("p_attnd",
+                                           "Variable 3: Percentage of international attendees",
+                                           min = 0,
+                                           max = 100,
+                                           step = 20,
+                                           value = 0),
+                       "intl" = sliderInput("p_attnd",
+                                            "Variable 3: Percentage of international attendees",
+                                            min = 0,
+                                            max = 100,
+                                            step = 20,
+                                            value = 100)
+                               )
+        })
+        output$uiv4 <- renderUI({
+                if (is.null(input$defset)) 
+                        return()
+                switch(input$defset,
+                       "loc" = sliderInput("fac_attnd",
+                                           "Variable 4: Percentage of international faculty",
+                                           min = 0,
+                                           max = 100,
+                                           step = 20,
+                                           value = 0),
+                       "intl" = sliderInput("fac_attnd",
+                                            "Variable 4: Percentage of international faculty",
+                                            min = 0,
+                                            max = 100,
+                                            step = 20,
+                                            value = 100)
+                        
+                )
+        })
+        output$uiv5 <- renderUI({
+                if (is.null(input$defset)) 
+                        return()
+                switch(input$defset,
+                       "loc" = sliderInput("accom",
+                                           "Variable 5: Percentage staying in hotels",
+                                           min = 0,
+                                           max = 100,
+                                           step = 20,
+                                           value = 0),
+                       "intl" = sliderInput("accom",
+                                            "Variable 5: Percentage staying in hotels",
+                                            min = 0,
+                                            max = 100,
+                                            step = 20,
+                                            value = 100),
+                        
+                )
+        })
+                
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
-    })
+    
 }
 
 # Run the application 
