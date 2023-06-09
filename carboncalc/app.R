@@ -9,6 +9,7 @@
 library(shiny)
 
 
+
 # Define UI for application that draws a histogram
 ui <- fluidPage(theme = shinythemes::shinytheme("lumen"),
 
@@ -54,13 +55,20 @@ ui <- fluidPage(theme = shinythemes::shinytheme("lumen"),
                             
                             # Show a plot of the generated distribution
                             mainPanel(
+                                    tableOutput('redf'),
                                     plotOutput("distPlot")
                             )
                     )
             ),
             tabPanel("User Guide & Assumptions",
-                     fluidRow(h4("Assumptions"),offset=2),# may be a card
-                     fluidRow(h4("User Guide"),offset=2 ) # may be a card
+                     fluidRow(
+                             column(12,
+                                    "test")
+                     ),# may be a card
+                     fluidRow(
+                             column(4,
+                                    "test2")
+                     ) # may be a card
                      )
     )
 
@@ -70,6 +78,25 @@ ui <- fluidPage(theme = shinythemes::shinytheme("lumen"),
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+                attn <- reactive(input$attnd)
+                fac <- reactive(input$fac)
+                muloc <- reactive(input$mu_loc)
+                muint <- reactive(input$mu_int)
+                perc_attn_intl <- reactive(input$p_attnd)
+                perc_fac_intl <- reactive(input$fac_attnd)
+                perc_hotel <- reactive(input$accom)
+                
+        # create reactive dataframe
+        redf <- reactive({
+                data <- data.frame(
+                        id = (1:(attn() +fac() )),
+                        type = c(rep("attn", attn()),rep("fac", fac())),
+                        
+                )
+                data        
+        })
+        
+        # reactive slider selection
         output$uiv3 <- renderUI({
                 if (is.null(input$defset)) 
                        return()
@@ -126,7 +153,9 @@ server <- function(input, output) {
                         
                 )
         })
-                
+        output$redf <- renderTable({
+                redf()
+                })   
 
     
 }
