@@ -87,15 +87,27 @@ server <- function(input, output) {
                 perc_hotel <- reactive(input$accom)
                 
         # create reactive dataframe
-        redf <- reactive({
-                data <- data.frame(
-                        id = (1:(attn() +fac() )),
-                        type = c(rep("attn", attn()),rep("fac", fac())),
-                        
+        redf <- function(x, y, facint, attint){
+                d1 <- data.frame(
+                        id = (1:x),
+                        type = rep("attn", x),
+                        travel = c(
+                                rep("intl",round(attint * x)),
+                                rep("home",round((100- attint) * x))
+                        )
                 )
-                data        
-        })
-        
+                d2 <- data.frame(
+                        id = (1:y),
+                        type = rep("fac", y),
+                        travel = c(
+                                rep("intl",round(facint * y)),
+                                rep("home",round((100-facint) * y))
+                        )
+                )
+                data <- rbind(d1,d2)
+                data    
+        }
+        df <- reactive(redf(x=attn(),y=fac(),facint=perc_fac_intl(),attint=perc_attn_intl()))
         # reactive slider selection
         output$uiv3 <- renderUI({
                 if (is.null(input$defset)) 
@@ -154,7 +166,7 @@ server <- function(input, output) {
                 )
         })
         output$redf <- renderTable({
-                redf()
+                df()
                 })   
 
     
