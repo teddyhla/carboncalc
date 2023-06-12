@@ -7,7 +7,8 @@
 
 # DEPENDENCIES 
 library(shiny)
-
+library(dplyr)
+reactiveConsole(TRUE)
 
 
 # Define UI for application that draws a histogram
@@ -55,7 +56,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme("lumen"),
                             
                             # Show a plot of the generated distribution
                             mainPanel(
-                                    tableOutput('redf'),
+                                    DT::dataTableOutput('redf'),
                                     plotOutput("distPlot")
                             )
                     )
@@ -80,51 +81,61 @@ ui <- fluidPage(theme = shinythemes::shinytheme("lumen"),
 server <- function(input, output) {
                 attn <- reactive(input$attnd)
                 fac <- reactive(input$fac)
-                muloc <- reactive(input$mu_loc)
-                muint <- reactive(input$mu_int)
-                perc_attn_intl <- reactive(input$p_attnd)
-                perc_fac_intl <- reactive(input$fac_attnd)
+                attn_intl <- reactive(input$p_attnd)
+                attn_home <- reactive(
+                        attn() - attn_intl()
+                )
+                fac_intl <- reactive(input$fac_attnd)
+                fac_home <- reactive(
+                        fac() - fac_intl()
+                )
                 perc_hotel <- reactive(input$accom)
-                
+                perc_home <- reactive(
+                        (attn() + fac()) - perc_hotel()
+                )
+                distloc <- reactive(
+                        rnorm((attn_home() + fac_home()) , mean= input$mu_loc , sd = 1)
+                )
+                distintl <- reactive(
+                        rnorm((attn_intl() + fac_intl()), mean= input$mu_intl , sd = 10 )
+                )
+         df <- reactive({
+                 
+                df <- data.frame(
+                        id = (1:(attn() + fac())),
+                        type = c(rep("attn",attn()), rep("fac",fac())),
+                        travel = c(
+                                rep("intl", attn_intl()),
+                                rep("local", attn_home()),
+                                rep("intl", fac_intl()),
+                                rep("local", fac_home())
+                        ),
+                        accommodation = c(
+                                rep("hotel",perc_hotel()),
+                                rep("home",perc_home())
+                        )
+                        #if else doesnt work because it is not assigned yet!
+                )
+         })
         # create reactive dataframe
-        redf <- function(x, y, facint, attint){
-                d1 <- data.frame(
-                        id = (1:x),
-                        type = rep("attn", x),
-                        travel = c(
-                                rep("intl",round(attint * x)),
-                                rep("home",round((100- attint) * x))
-                        )
-                )
-                d2 <- data.frame(
-                        id = (1:y),
-                        type = rep("fac", y),
-                        travel = c(
-                                rep("intl",round(facint * y)),
-                                rep("home",round((100-facint) * y))
-                        )
-                )
-                data <- rbind(d1,d2)
-                data    
-        }
-        df <- reactive(redf(x=attn(),y=fac(),facint=perc_fac_intl(),attint=perc_attn_intl()))
+        
         # reactive slider selection
         output$uiv3 <- renderUI({
                 if (is.null(input$defset)) 
                        return()
                 switch(input$defset,
                        "loc" = sliderInput("p_attnd",
-                                           "Variable 3: Percentage of international attendees",
+                                           "Variable 3: Number of international attendees",
                                            min = 0,
-                                           max = 100,
-                                           step = 20,
+                                           max = input$attnd,
+                                           step = 1,
                                            value = 0),
                        "intl" = sliderInput("p_attnd",
-                                            "Variable 3: Percentage of international attendees",
+                                            "Variable 3: Number of international attendees",
                                             min = 0,
-                                            max = 100,
-                                            step = 20,
-                                            value = 100)
+                                            max = input$attnd,
+                                            step = 1,
+                                            value = input$attnd)
                                )
         })
         output$uiv4 <- renderUI({
@@ -132,17 +143,17 @@ server <- function(input, output) {
                         return()
                 switch(input$defset,
                        "loc" = sliderInput("fac_attnd",
-                                           "Variable 4: Percentage of international faculty",
+                                           "Variable 4: Number of international faculty",
                                            min = 0,
-                                           max = 100,
-                                           step = 20,
+                                           max = input$fac,
+                                           step = 1,
                                            value = 0),
                        "intl" = sliderInput("fac_attnd",
-                                            "Variable 4: Percentage of international faculty",
+                                            "Variable 4: Number of international faculty",
                                             min = 0,
-                                            max = 100,
-                                            step = 20,
-                                            value = 100)
+                                            max = input$fac,
+                                            step = 1,
+                                            value = input$fac)
                         
                 )
         })
@@ -151,21 +162,21 @@ server <- function(input, output) {
                         return()
                 switch(input$defset,
                        "loc" = sliderInput("accom",
-                                           "Variable 5: Percentage staying in hotels",
+                                           "Variable 5: Number staying in hotels",
                                            min = 0,
-                                           max = 100,
-                                           step = 20,
+                                           max = (input$fac + input$attnd),
+                                           step = 1,
                                            value = 0),
                        "intl" = sliderInput("accom",
-                                            "Variable 5: Percentage staying in hotels",
+                                            "Variable 5: Number staying in hotels",
                                             min = 0,
-                                            max = 100,
-                                            step = 20,
-                                            value = 100),
+                                            max = (input$fac + input$attnd),
+                                            step = 1,
+                                            value = (input$fac + input$attnd)),
                         
                 )
         })
-        output$redf <- renderTable({
+        output$redf <- DT::renderDataTable({
                 df()
                 })   
 
