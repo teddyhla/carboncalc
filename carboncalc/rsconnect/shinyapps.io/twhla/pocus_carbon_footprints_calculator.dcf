@@ -5,9 +5,9 @@ account: twhla
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 9135139
-bundleId: 7325211
+bundleId: 7338786
 url: https://twhla.shinyapps.io/pocus_carbon_footprints_calculator/
-when: 1686322336.10582
-lastSyncTime: 1686322336.10583
+when: 1686654516.78149
+lastSyncTime: 1686654516.7815
 asMultiple: FALSE
 asStatic: FALSE

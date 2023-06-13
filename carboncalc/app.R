@@ -7,8 +7,7 @@
 
 # DEPENDENCIES 
 library(shiny)
-library(dplyr)
-reactiveConsole(TRUE)
+
 
 
 # Define UI for application that draws a histogram
@@ -57,14 +56,14 @@ ui <- fluidPage(theme = shinythemes::shinytheme("lumen"),
                             # Show a plot of the generated distribution
                             mainPanel(
                                     DT::dataTableOutput('redf'),
+                                    verbatimTextOutput("test2"),
                                     plotOutput("distPlot")
                             )
                     )
             ),
             tabPanel("User Guide & Assumptions",
                      fluidRow(
-                             column(12,
-                                    "test")
+                             column(12,"test")
                      ),# may be a card
                      fluidRow(
                              column(4,
@@ -94,10 +93,10 @@ server <- function(input, output) {
                         (attn() + fac()) - perc_hotel()
                 )
                 distloc <- reactive(
-                        rnorm((attn_home() + fac_home()) , mean= input$mu_loc , sd = 1)
+                        rnorm(n= (attn_home() + fac_home()) , mean= input$mu_loc , sd = 1)
                 )
                 distintl <- reactive(
-                        rnorm((attn_intl() + fac_intl()), mean= input$mu_intl , sd = 10 )
+                        rnorm(n= (input$p_attnd + input$fac_attnd), mean= input$mu_int , sd = 10 )
                 )
          df <- reactive({
                  
@@ -116,9 +115,14 @@ server <- function(input, output) {
                         )
                         #if else doesnt work because it is not assigned yet!
                 )
+                df$carbon_accomo <- ifelse(df$accommodation == "hotel",20.8,0)
+                df<-df[order(df$travel),]
+                df$dist <- ifelse(df$travel == "local",distloc(),distintl())
+                df$carbon_travel <- ifelse(df$travel == "local",0.03549,0.14062)
+                df
          })
         # create reactive dataframe
-        
+         
         # reactive slider selection
         output$uiv3 <- renderUI({
                 if (is.null(input$defset)) 
@@ -163,13 +167,13 @@ server <- function(input, output) {
                 switch(input$defset,
                        "loc" = sliderInput("accom",
                                            "Variable 5: Number staying in hotels",
-                                           min = 0,
+                                           min = (attn_intl()+fac_intl()),
                                            max = (input$fac + input$attnd),
                                            step = 1,
-                                           value = 0),
+                                           value = (attn_intl()+fac_intl())),
                        "intl" = sliderInput("accom",
                                             "Variable 5: Number staying in hotels",
-                                            min = 0,
+                                            min = (attn_intl()+fac_intl()),
                                             max = (input$fac + input$attnd),
                                             step = 1,
                                             value = (input$fac + input$attnd)),
@@ -178,7 +182,7 @@ server <- function(input, output) {
         })
         output$redf <- DT::renderDataTable({
                 df()
-                })   
+                }) 
 
     
 }
