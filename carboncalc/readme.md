@@ -56,7 +56,7 @@ international travel dist = int_disc
 
 - Formula 
 
-$$ total_carbon_cost_per_person = \sum_{n=1}^{2} travel  +  \sum_{n=1}^{2} accommodation $$
+$$ Total\quad carbon \quad cost \quad per person = \sum_{n=1}^{2} travel  +  \sum_{n=1}^{2} accommodation $$
 
 
 ## Session Info
