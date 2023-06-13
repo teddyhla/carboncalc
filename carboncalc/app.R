@@ -1,33 +1,36 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
+# Carbon cost of POCUS courses
+# This is a Shiny web application.
 #
 # Conceived by A Wong, M Zawadka and T Hla
 # see github repo for details 
 
 # DEPENDENCIES 
 library(shiny)
-
-
+library(plotly)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(theme = shinythemes::shinytheme("lumen"),
 
     # Application title
-    titlePanel("Carbon cost of Local vs. International POCUS courses"),
+    titlePanel("Local vs. International POCUS courses: a simulated Carbon Cost"),
     
     #horizontal panel
-    hr(),
+    p("Explore the carbon cost of POCU courses by manipulating the seven different variables below. Please see 'User Guide & Assumptions' for details."),
+    p("Conceived and developed by",a("Dr Adrian Wong", href= "https://twitter.com/avkwong?lang=en" ), a("Dr Mateusz Zawadka", href= "https://twitter.com/m_zawadka?lang=en"), "and", a("Dr Teddy Tun Win Hla",href= "https://twitter.com/teddyhla?lang=en-GB")
+            
+    ),
     
+    
+    #main side bar panel
     br(),
     tabsetPanel(
             tabPanel("Simulations",
                      br(),
                     sidebarLayout(
-                            sidebarPanel("Please select variables", width=2,
+                            sidebarPanel("Please select variables individually", width=2,
                                          br(),
                                          br(),
-                                         radioButtons("defset","Settings:", choices= c(
+                                         radioButtons("defset","Default Settings:", choices= c(
                                                  "Local" = "loc",
                                                  "International" = "intl"
                                          )),
@@ -55,19 +58,40 @@ ui <- fluidPage(theme = shinythemes::shinytheme("lumen"),
                             
                             # Show a plot of the generated distribution
                             mainPanel(
-                                    DT::dataTableOutput('redf'),
+                                    plotlyOutput("carboncostPlot"),
                                     verbatimTextOutput("test2"),
-                                    plotOutput("distPlot")
+                                    DT::dataTableOutput('redf'),
                             )
                     )
             ),
             tabPanel("User Guide & Assumptions",
                      fluidRow(
-                             column(12,"test")
+                             column(12,
+                                    h3("User Guide"),
+                                    p("Default settings are set at 30 attendees with 5 faculty members travelling over a mean distance of 50km for local course and 500 km for international course"),
+                                    p("Manipulating the variables will reset the graph and new graph drawn and displayed in real time."),
+                                    p("If there are any queries or bugs or feedback in using this app, please contact", a("Dr Teddy Tun Win Hla",href= "https://twitter.com/teddyhla?lang=en-GB")),
+                                    p("If you would like to embed this app in your website, you may use the following code but we would be grateful if you could notify us."),
+                                    )
                      ),# may be a card
+                     hr(),
                      fluidRow(
-                             column(4,
-                                    "test2")
+                             column(12,
+                                    h3("Assumptions"),
+                                    h4("Assumption 1"),
+                                    p("We assumed that POCUS courses are run over two days. Thus, if not staying at home, attendees and faculty will require 2-night hotel stay."),
+                                    p("We assumed that all international attendees are not sharing rooms in a hotel and not staying locally with friends and family."),
+                                    h4("Assumption 2"),
+                                    p("We have deliberately not calculated the carbon cost of moving equipments and venue set up. This is because a POCUS course is likely to require venue and equipment irregardless of locality."),
+                                    h4("Assumption 3"),
+                                    p("We assumed that all international travels are via flights, travelling in 'economy class'. We assumed that all local travels are via 'national rail' without added car/ taxi journeys."),
+                                    h4("Assumption 4"),
+                                    p("Carbon foot print is more accurately subdivided into carbon dioxide, methane, and nitrous oxide levels. For parsimony, we have reported a total equivalent carbon dioxide as a single value."),
+                                    h4("Assumption 5"),
+                                    p("We assumed that all travel distance to venue comprises of a return journey and follows a normal distribution."),
+                                    h4("Reference"),
+                                    p("For our calculation, we have used", a("UK Government green house gas conversions", href= "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2022"))
+                                    )
                      ) # may be a card
                      )
     )
@@ -78,6 +102,8 @@ ui <- fluidPage(theme = shinythemes::shinytheme("lumen"),
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+        # here we will create reactive variables
+        # key logics - for see readme.md
                 attn <- reactive(input$attnd)
                 fac <- reactive(input$fac)
                 attn_intl <- reactive(input$p_attnd)
@@ -98,8 +124,11 @@ server <- function(input, output) {
                 distintl <- reactive(
                         rnorm(n= (input$p_attnd + input$fac_attnd), mean= input$mu_int , sd = 10 )
                 )
+        # here we will create a reactive dataframe.
          df <- reactive({
-                 
+                 #first an id is assigned based on number of attendees and faculty
+                 # then they are classed as faculty or attendees
+                 # then their mode of travel is assigned
                 df <- data.frame(
                         id = (1:(attn() + fac())),
                         type = c(rep("attn",attn()), rep("fac",fac())),
@@ -115,15 +144,24 @@ server <- function(input, output) {
                         )
                         #if else doesnt work because it is not assigned yet!
                 )
+                #then their state of accommodation is assigned.
                 df$carbon_accomo <- ifelse(df$accommodation == "hotel",20.8,0)
+                #then dataframe is sorted based on mode of travel
                 df<-df[order(df$travel),]
+                # then we assigned distances computed
                 df$dist <- ifelse(df$travel == "local",distloc(),distintl())
+                # see read me for rationale of this
                 df$carbon_travel <- ifelse(df$travel == "local",0.03549,0.14062)
+                df$total_carbon <- (df$carbon_travel * 2 * df$dist) + df$carbon_accomo
+                #dont forget to return a reactive dataframe back
+                #change to factors for
+                df$type <- as.factor(df$type)
+                df$accommodation <- as.factor(df$accommodation)
+                df$travel <- as.factor(df$travel)
                 df
          })
-        # create reactive dataframe
          
-        # reactive slider selection
+        # reactive slider selection based on default setting of local vs. international
         output$uiv3 <- renderUI({
                 if (is.null(input$defset)) 
                        return()
@@ -183,6 +221,12 @@ server <- function(input, output) {
         output$redf <- DT::renderDataTable({
                 df()
                 }) 
+        output$test2 <- renderPrint({
+                summary(df())
+        })
+        output$carboncostPlot <- renderPlotly({
+                plot_ly(df(), x = ~travel, y= ~total_carbon  )
+        })
 
     
 }
