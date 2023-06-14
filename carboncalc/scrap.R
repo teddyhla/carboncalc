@@ -1,3 +1,5 @@
+
+
 attendee <- 50
 faculty <- 5
 hotels <- c(rep("yes",15),rep("no",40))

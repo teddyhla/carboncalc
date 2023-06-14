@@ -6,6 +6,8 @@
 - Dr Mateusz Zawadka
 - Dr Teddy Tun Win Hla
 
+## Inspiration
+
 ## Assumptions
 
 1.Assumed that all international travels are at a 'economy class' travel. 
@@ -54,12 +56,34 @@ international travel dist = int_disc
 
 - Total carbon cost per person is the sum of carbon cost for return travel journey plus the sum of accommodation.
 
+- Based on UK National Travel Survey[1], surface rail remains the most common mode of transport for average miles travelled per person per year. As a result, for local travel, we assumed that 'surface rail' will be used as most common mode of travel.
+
+- Based on Eurocontrol, an average flight distance travelled in European Union is 981km and as a result, we have used as a default for international flight. 
+- Most travel distances tend to follow gamma distribution and we have modelled our distance parameter as such.
+
 - Formula 
 
 $$ Total\quad carbon \quad cost \quad per \quad person = \sum_{n=1}^{2} travel  +  \sum_{n=1}^{2} accommodation $$
 
+## Known bugs 
+
+## Future direction
+- bootswatch theme [/]
+- embed in custom 
+
+## References 
+
+1.  UK Government National Travel Survey 2021: Mode share, journey lengths and public transport use - GOV.UK. In: www.gov.uk. https://www.gov.uk/government/statistics/national-travel-survey-2021/national-travel-survey-2021-mode-share-journey-lengths-and-public-transport-use. Accessed 14 Jun 2023
+
+2. Network Manager (2023) EUROCONTROL Data Snapshot
+3. Paul A, Schmalz U (2017) DATASET2050 Deliverable 3.1 " Current Passenger Demand Profile "
+4. Plötz P, Jakobsson N, Sprei F (2017) On the distribution of individual daily driving distances. Transportation Research Part B: Methodological 101:213–227. https://doi.org/10.1016/j.trb.2017.04.008
+5. Veloso M, Phithakkitnukoon S, Bento C, et al (2011) Exploratory Study of Urban Flow using Taxi Traces
+
 
 ## Session Info
+
+
 R version 4.2.1 (2022-06-23)
 
 Platform: x86_64-apple-darwin17.0 (64-bit)

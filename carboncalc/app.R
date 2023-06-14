@@ -7,12 +7,13 @@
 # DEPENDENCIES 
 library(shiny)
 library(plotly)
+library(bslib)
 
 # Define UI for application that draws a histogram
-ui <- fluidPage(theme = shinythemes::shinytheme("lumen"),
+ui <- fluidPage(theme = bslib::bs_theme(bootswatch = "sandstone"),
 
     # Application title
-    titlePanel("Local vs. International POCUS courses: a simulated Carbon Cost"),
+    titlePanel("Local vs. International POCUS courses: an interactive simulated Carbon Cost Calculator"),
     
     #horizontal panel
     p("Explore the carbon cost of POCU courses by manipulating the seven different variables below. Please see 'User Guide & Assumptions' for details."),
@@ -69,9 +70,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme("lumen"),
                              column(12,
                                     h3("User Guide"),
                                     p("Default settings are set at 30 attendees with 5 faculty members travelling over a mean distance of 50km for local course and 500 km for international course"),
-                                    p("Manipulating the variables will reset the graph and new graph drawn and displayed in real time."),
-                                    p("If there are any queries or bugs or feedback in using this app, please contact", a("Dr Teddy Tun Win Hla",href= "https://twitter.com/teddyhla?lang=en-GB")),
-                                    p("If you would like to embed this app in your website, you may use the following code but we would be grateful if you could notify us."),
+                                    p("Manipulating the variables will reset the graph and new graph drawn and displayed in real time.")
                                     )
                      ),# may be a card
                      hr(),
@@ -93,7 +92,28 @@ ui <- fluidPage(theme = shinythemes::shinytheme("lumen"),
                                     p("For our calculation, we have used", a("UK Government green house gas conversions", href= "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2022"))
                                     )
                      ) # may be a card
+                     ),
+            tabPanel("About",
+                     fluidRow(
+                             column(12,
+                                    h4("Version"),
+                                    p("0.1"),
+                                    h4("License"),
+                                    p("GPL-3"),
+                                    h4("Authors"),
+                                    p("If there are any queries or bugs or feedback in using this app, please contact", a("Dr Teddy Tun Win Hla",href= "https://twitter.com/teddyhla?lang=en-GB")),
+                                    p("If you would like to embed this app in your website, you may use the following code but we would be grateful if you could notify us."),
+                                    h4("Cite this app as"),
+                                    p("Please use the following to cite in publications:"),
+                                    
+                                    )
+                     ),
+                     hr(),
+                     fluidRow(
+                             
                      )
+                    
+            )
     )
 
     # Sidebar with a slider input for number of bins 
