@@ -1,5 +1,3 @@
-
-
 attendee <- 50
 faculty <- 5
 hotels <- c(rep("yes",15),rep("no",40))
@@ -25,6 +23,10 @@ df$carbon_accomo <- ifelse(df$hotel == "yes",20.8,0)
 
 df$total_carbon <- (df$carbon_travel * df$dist) + df$carbon_accomo
 
-fig <- ggplot2::ggplot(data = df, aes(x= hotels, y= total_carbon, group = travel)) +
+fig <- ggplot2::ggplot(data = df, aes(x= hotels, y= carbon_accomo, group = travel)) +
         geom_point() + 
+        facet_wrap(~travel) 
+
+fig2 <- ggplot2::ggplot(data= df, aes(x= dist, y=carbon_travel,group= travel))+
+        geom_col()+
         facet_wrap(~travel)

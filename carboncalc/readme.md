@@ -48,20 +48,19 @@ international travel dist = int_disc
 
 ## Internal Logic
 
-- Number of international attendees(variable 3) cannot exceed total number of attendees (variable 1). 
+- Given attendees can be 'local' or 'international', number of international attendees(variable 3) cannot exceed total number of attendees (variable 1). 
 
-- Number of international faculty (variable 4) cannot exceed total number of faculty (variable 2).
+- Given faculty can be 'local' or 'international', number of international faculty (variable 4) cannot exceed total number of faculty (variable 2).
 
 - Number staying in hotels (variable 5) cannot exceed as a maximum total number of attendees and faculty(variable 1 and variable 2). This scenario would be where all the attendees and faculty stay in 'hotel' regardless of local or international travels. Conversely, the minimum cannot exceed sum of international attendees and faculty (i.e., all international attendees and faculty must stay in hotels for accommodation).
 
-- Total carbon cost per person is the sum of carbon cost for return travel journey plus the sum of accommodation.
+- Based on UK National Travel Survey[1], surface rail remains the most common mode of transport for average miles travelled per person per year. As a result, for local travel, we assumed that 'surface rail' will be used as most common mode of travel. For 'typical' local courses, we have modelled using a mean distance of 100km (approximately 1 hour 15 mins surface rail journey time) as a maximum upperlimit of acceptable commute.
 
-- Based on UK National Travel Survey[1], surface rail remains the most common mode of transport for average miles travelled per person per year. As a result, for local travel, we assumed that 'surface rail' will be used as most common mode of travel.
+- Based on Eurocontrol, an average flight distance travelled in European Union is 981km and as a result, we have used as a 1000 km as default for international flight. 
 
-- Based on Eurocontrol, an average flight distance travelled in European Union is 981km and as a result, we have used as a default for international flight. 
 - Most travel distances tend to follow gamma distribution and we have modelled our distance parameter as such.
 
-- Formula 
+- Total carbon cost per person is the sum of carbon cost for return travel journey plus the sum of accommodation using this formula.
 
 $$ Total\quad carbon \quad cost \quad per \quad person = \sum_{n=1}^{2} travel  +  \sum_{n=1}^{2} accommodation $$
 
