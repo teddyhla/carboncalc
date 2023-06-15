@@ -8,6 +8,7 @@
 library(shiny)
 library(plotly)
 library(bslib)
+reactlog::reactlog_enable()
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(theme = bslib::bs_theme(bootswatch = "sandstone"),
@@ -77,17 +78,19 @@ ui <- fluidPage(theme = bslib::bs_theme(bootswatch = "sandstone"),
                      fluidRow(
                              column(12,
                                     h3("Assumptions"),
-                                    h4("Assumption 1"),
+                                    h4("Duration of course"),
                                     p("We assumed that POCUS courses are run over two days. Thus, if not staying at home, attendees and faculty will require 2-night hotel stay."),
                                     p("We assumed that all international attendees are not sharing rooms in a hotel and not staying locally with friends and family."),
-                                    h4("Assumption 2"),
+                                    h4("Carbon cost of venue and POCUS equipment"),
                                     p("We have deliberately not calculated the carbon cost of moving equipments and venue set up. This is because a POCUS course is likely to require venue and equipment irregardless of locality."),
-                                    h4("Assumption 3"),
-                                    p("We assumed that all international travels are via flights, travelling in 'economy class'. We assumed that all local travels are via 'national rail' without added car/ taxi journeys."),
-                                    h4("Assumption 4"),
+                                    h4("Type of transports"),
+                                    p("We assumed that all international travels are via flights, travelling in 'economy class'. We assumed that all local travels are via 'surface rail' without added car/ taxi journeys."),
+                                    p("Based on UK National Travel Survey[1], surface rail remains the most common mode of transport for average miles travelled per person per year. As a result, for local travel, we assumed that 'surface rail' will be used as most common mode of travel."),
+                                    h4("Breakdown of carbon cost"),
                                     p("Carbon foot print is more accurately subdivided into carbon dioxide, methane, and nitrous oxide levels. For parsimony, we have reported a total equivalent carbon dioxide as a single value."),
-                                    h4("Assumption 5"),
-                                    p("We assumed that all travel distance to venue comprises of a return journey and follows a normal distribution."),
+                                    h4("Typical journey"),
+                                    p("We assumed that all travel distance to venue comprises of a return journey and follows a gamma distribution [2].For 'typical' local courses, we have modelled using a mean distance of 100km (approximately 1 hour 15 mins surface rail journey time) as a maximum upperlimit of acceptable commute."),
+                                    p("Based on Eurocontrol, an average flight distance travelled in European Union is 981km and as a result, we have used as a 1000 km as default for international flight [3]. "),
                                     h4("Reference"),
                                     p("For our calculation, we have used", a("UK Government green house gas conversions", href= "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2022"))
                                     )
@@ -103,6 +106,8 @@ ui <- fluidPage(theme = bslib::bs_theme(bootswatch = "sandstone"),
                                     h4("Authors"),
                                     p("If there are any queries or bugs or feedback in using this app, please contact", a("Dr Teddy Tun Win Hla",href= "https://twitter.com/teddyhla?lang=en-GB")),
                                     p("If you would like to embed this app in your website, you may use the following code but we would be grateful if you could notify us."),
+                                    h4("Source code"),
+                                    p("Source code is available at",a('github repo link',href= "https://github.com/teddyhla/carboncalc/tree/master/carboncalc" )),
                                     h4("Cite this app as"),
                                     p("Please use the following to cite in publications:"),
                                     
