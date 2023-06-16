@@ -64,6 +64,7 @@ international travel dist = int_disc
 
 $$ Total\quad carbon \quad cost \quad per \quad person = \sum_{n=1}^{2} travel  +  \sum_{n=1}^{2} accommodation $$
 
+> ?May be we should wrangle own data using european air travel dataset
 ## Known bugs 
 
 ## Future direction

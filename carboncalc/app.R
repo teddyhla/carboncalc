@@ -52,9 +52,9 @@ ui <- fluidPage(theme = bslib::bs_theme(bootswatch = "sandstone"),
                                          uiOutput("uiv4"),
                                          uiOutput("uiv5"),
                                          numericInput("mu_loc","Variable 6: Mean distance for local in km",
-                                                      value = 50, min = 5, max = 100,step = 5),
+                                                      value = 100, min = 5, max = 250,step = 5),
                                          numericInput("mu_int","Variable 7: Mean distance for international in km",
-                                                      value = 500, min = 150, max = 1500,step = 50)
+                                                      value = 1000, min = 500, max = 2500,step = 100)
                                          
                             ),
                             
@@ -129,6 +129,7 @@ ui <- fluidPage(theme = bslib::bs_theme(bootswatch = "sandstone"),
 server <- function(input, output) {
         # here we will create reactive variables
         # key logics - for see readme.md
+        
                 attn <- reactive(input$attnd)
                 fac <- reactive(input$fac)
                 attn_intl <- reactive(input$p_attnd)
@@ -185,6 +186,7 @@ server <- function(input, output) {
                 df$travel <- as.factor(df$travel)
                 df
          })
+       
          
         # reactive slider selection based on default setting of local vs. international
         output$uiv3 <- renderUI({

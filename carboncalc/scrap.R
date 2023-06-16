@@ -15,6 +15,13 @@ df$hotels <- as.factor(df$hotels)
 
 dist_local <- rnorm(dplyr::count(df,travel)[2,2], mean = 50, sd = 10)
 dist_intl <- rnorm(dplyr::count(df,travel)[1,2], mean = 500, sd = 50)
+# should really be gamma function 
+# mean of gamma function is shape / rate 
+# therefore is mean is 1000, then , shape = 1000 * rate
+# 
+
+
+
 
 df$dist <- ifelse(df$travel == "intl",dist_intl,dist_local)
 
@@ -30,3 +37,4 @@ fig <- ggplot2::ggplot(data = df, aes(x= hotels, y= carbon_accomo, group = trave
 fig2 <- ggplot2::ggplot(data= df, aes(x= dist, y=carbon_travel,group= travel))+
         geom_col()+
         facet_wrap(~travel)
+
