@@ -152,6 +152,90 @@ ui <- fluidPage(theme = bslib::bs_theme(bootswatch = "sandstone"),
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+        output$uiv3 <- renderUI({
+                
+                numericInput("p_attnd",
+                             "Variable 3: Number of international attendees",
+                             min = 0,
+                             max = input$attnd,
+                             step = 1,
+                             value = 1
+                             
+                )
+                #if (is.null(input$defset)) 
+                #       return()
+                #switch(input$defset,
+                #       "loc" = sliderInput("p_attnd",
+                #                           "Variable 3: Number of international attendees",
+                #                           min = 0,
+                #                           max = input$attnd,
+                #                           step = 1,
+                #                           value = 0),
+                #       "intl" = sliderInput("p_attnd",
+                #                            "Variable 3: Number of international attendees",
+                #                            min = 0,
+                #                            max = input$attnd,
+                #                            step = 1,
+                #                            value = input$attnd)
+                #               )
+        })
+        output$uiv4 <- renderUI({
+                
+                numericInput("fac_attnd",
+                             "Variable 4: Number of international faculty",
+                             min = 0, 
+                             max = input$fac,
+                             step = 1,
+                             value = 1
+                             
+                )
+                #if (is.null(input$defset)) 
+                #        return()
+                #switch(input$defset,
+                #       "loc" = sliderInput("fac_attnd",
+                #                           "Variable 4: Number of international faculty",
+                #                           min = 0,
+                #                           max = input$fac,
+                #                           step = 1,
+                #                           value = 0),
+                #       "intl" = sliderInput("fac_attnd",
+                #                            "Variable 4: Number of international faculty",
+                #                            min = 0,
+                #                            max = input$fac,
+                #                            step = 1,
+                #                            value = input$fac)
+                #        
+                #)
+        })
+        output$uiv5 <- renderUI({
+                
+                numericInput("accom",
+                             "Variable 5: Number staying in hotels",
+                             min = 0,
+                             max = (input$attnd + input$fac + 15),
+                             step = 1,
+                             value = 1
+                )
+                #if (is.null(input$defset)) 
+                #        return()
+                #switch(input$defset,
+                #       "loc" = sliderInput("accom",
+                #                           "Variable 5: Number staying in hotels",
+                #                           min = (attn_intl()+fac_intl()),
+                #                           max = (input$fac + input$attnd),
+                #                           step = 1,
+                #                           value = (attn_intl()+fac_intl())),
+                #       "intl" = sliderInput("accom",
+                #                            "Variable 5: Number staying in hotels",
+                #                            min = (attn_intl()+fac_intl()),
+                #                            max = (input$fac + input$attnd),
+                #                            step = 1,
+                #                            value = (input$fac + input$attnd)),
+                #        
+                #)
+        })
+        
+        
         # here we will create reactive variables
         # key logics - for see readme.md
         
@@ -245,88 +329,7 @@ server <- function(input, output) {
          })
          
         # reactive slider selection based on default setting of local vs. international
-        output$uiv3 <- renderUI({
-                
-                numericInput("p_attnd",
-                        "Variable 3: Number of international attendees",
-                        min = 0,
-                        max = input$attnd,
-                        step = 1,
-                        value = 1
-                        
-                )
-                #if (is.null(input$defset)) 
-                #       return()
-                #switch(input$defset,
-                #       "loc" = sliderInput("p_attnd",
-                #                           "Variable 3: Number of international attendees",
-                #                           min = 0,
-                #                           max = input$attnd,
-                #                           step = 1,
-                #                           value = 0),
-                #       "intl" = sliderInput("p_attnd",
-                #                            "Variable 3: Number of international attendees",
-                #                            min = 0,
-                #                            max = input$attnd,
-                #                            step = 1,
-                #                            value = input$attnd)
-                #               )
-        })
-        output$uiv4 <- renderUI({
-                
-                numericInput("fac_attnd",
-                        "Variable 4: Number of international faculty",
-                        min = 0, 
-                        max = input$fac,
-                        step = 1,
-                        value = 1
-                        
-                )
-                #if (is.null(input$defset)) 
-                #        return()
-                #switch(input$defset,
-                #       "loc" = sliderInput("fac_attnd",
-                #                           "Variable 4: Number of international faculty",
-                #                           min = 0,
-                #                           max = input$fac,
-                #                           step = 1,
-                #                           value = 0),
-                #       "intl" = sliderInput("fac_attnd",
-                #                            "Variable 4: Number of international faculty",
-                #                            min = 0,
-                #                            max = input$fac,
-                #                            step = 1,
-                #                            value = input$fac)
-                #        
-                #)
-        })
-        output$uiv5 <- renderUI({
-                
-                numericInput("accom",
-                        "Variable 5: Number staying in hotels",
-                        min = 0,
-                        max = (input$attnd + input$fac + 15),
-                        step = 1,
-                        value = 1
-                )
-                #if (is.null(input$defset)) 
-                #        return()
-                #switch(input$defset,
-                #       "loc" = sliderInput("accom",
-                #                           "Variable 5: Number staying in hotels",
-                #                           min = (attn_intl()+fac_intl()),
-                #                           max = (input$fac + input$attnd),
-                #                           step = 1,
-                #                           value = (attn_intl()+fac_intl())),
-                #       "intl" = sliderInput("accom",
-                #                            "Variable 5: Number staying in hotels",
-                #                            min = (attn_intl()+fac_intl()),
-                #                            max = (input$fac + input$attnd),
-                #                            step = 1,
-                #                            value = (input$fac + input$attnd)),
-                #        
-                #)
-        })
+        
         output$redf <- DT::renderDataTable({
                 daf()
                 }) 
