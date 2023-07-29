@@ -38,3 +38,13 @@ fig2 <- ggplot2::ggplot(data= df, aes(x= dist, y=carbon_travel,group= travel))+
         geom_col()+
         facet_wrap(~travel)
 
+
+alpha <- 1500.0
+theta <- 0.75
+
+g <- rgamma(n = 10000, shape = alpha, scale = theta)
+hist(g)
+mean(g)
+
+#the combo that gives a mean of 50km distance is alpha 10, theta 5
+# the combo that gives a mean of 1125 distance is alpha 1500, theta 0.75 
