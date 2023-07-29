@@ -6,12 +6,19 @@
 
 # DEPENDENCIES 
 library(shiny)
+#library(shinyBS)
+#for adding tooltips
 library(plotly)
+library(dplyr)
+library(tidyr)
+library(magrittr)
+library(ggplot2)
 library(bslib)
 reactlog::reactlog_enable()
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(theme = bslib::bs_theme(bootswatch = "sandstone"),
+                
 
     # Application title
     titlePanel("Local vs. non-local events : an interactive simulated Carbon Cost Calculator"),
@@ -67,9 +74,20 @@ ui <- fluidPage(theme = bslib::bs_theme(bootswatch = "sandstone"),
                             
                             # Show a plot of the generated distribution
                             mainPanel(
-                                    #plotlyOutput("carboncostPlot"),
-                                    verbatimTextOutput("test2"),
-                                    #DT::dataTableOutput('redf'),
+                                    fluidRow(
+                                        column(6,
+                                                plotOutput("carboncostPlot")  
+                                        ),
+                                        column(6,
+                                                plotOutput("tmap")
+                                        )
+                                    )
+                                    #fluidRow(
+                                    #        verbatimTextOutput("test2")
+                                    #)
+                                    # plotlyOutput("carboncostPlot"),
+                                     
+                                    # DT::dataTableOutput('redf'),
                             )
                     )
             ),
@@ -116,7 +134,7 @@ ui <- fluidPage(theme = bslib::bs_theme(bootswatch = "sandstone"),
                                     h4("Source code"),
                                     p("Source code is available at",a('github repo link',href= "https://github.com/teddyhla/carboncalc/tree/master/carboncalc" )),
                                     h4("Cite this app as"),
-                                    p("Please use the following to cite in publications:"),
+                                    p("Please use the following to cite in publications:")
                                     
                                     )
                      ),
@@ -137,42 +155,42 @@ server <- function(input, output) {
         # here we will create reactive variables
         # key logics - for see readme.md
         
-                attn <- reactive(input$attnd)
-                fac <- reactive(input$fac)
-                attn_intl <- reactive(input$p_attnd)
-                attn_home <- reactive(
-                        attn() - attn_intl()
-                )
-                fac_intl <- reactive(input$fac_attnd)
-                fac_home <- reactive(
-                        fac() - fac_intl()
-                )
-                no_hotel <- reactive(input$accom)
-                no_home <- reactive(
-                        (attn() + fac()) - no_hotel()
-                )
-                dur <- reactive(
-                        input$duration
-                )
-                
-                distloc <- reactive(
-                        rgamma(
-                                n = (attn_home() + fac_home()), shape = 10, scale = 5
-                        )
-                )
-                
-                distintl <- reactive(
-                        rgamma(
-                                n = (input$p_attnd + input$fac_attnd), shape = 1500, scale = 0.75
-                        )
-                )
-                #distloc <- reactive(
-                #        rnorm(n= (attn_home() + fac_home()) , mean= input$mu_loc , sd = 1)
-                #)
-                #distintl <- reactive(
-                #        rnorm(n= (input$p_attnd + input$fac_attnd), mean= input$mu_int , sd = 10 )
-                #)
-        # here we will create a reactive dataframe.
+        attn <- reactive(ifelse(input$attnd == 0, 0, input$attnd))
+        fac <- reactive(ifelse(input$fac == 0, 0, input$fac))
+        attn_intl <- reactive(ifelse(input$p_attnd == 0, 0,input$p_attnd))
+        attn_home <- reactive(
+                 attn() - attn_intl()
+        )
+        fac_intl <- reactive(ifelse(input$fac_attnd == 0, 0, input$fac_attnd))
+        fac_home <- reactive(
+                 fac() - fac_intl()
+        )
+        no_hotel <- reactive(ifelse(input$accom == 0, 0, input$accom))
+        no_home <- reactive(
+                 (attn() + fac()) - no_hotel()
+        )
+        dur <- reactive(
+                 input$duration
+        )
+         
+        distloc <- reactive(
+                 rgamma(
+                         n = (attn_home() + fac_home()), shape = 10, scale = 5
+                 )
+        )
+         
+        distintl <- reactive(
+                 rgamma(
+                         n = (input$p_attnd + input$fac_attnd), shape = 1500, scale = 0.75
+                 )
+        )
+        #distloc <- reactive(
+        #        rnorm(n= (attn_home() + fac_home()) , mean= input$mu_loc , sd = 1)
+        #)
+        #distintl <- reactive(
+        #        rnorm(n= (input$p_attnd + input$fac_attnd), mean= input$mu_int , sd = 10 )
+        #)
+        # here w will create a reactive dataframe.
          daf <- reactive({
                  #first an id is assigned based on number of attendees and faculty
                  # then they are classed as faculty or attendees
@@ -181,40 +199,50 @@ server <- function(input, output) {
                         id = (1:(attn() + fac())),
                         type = c(rep("attendee",times = attn()), rep("faculty",times = fac())),
                         travel = c(
-                                rep("nonlocal", times = attn_intl()),
-                                rep("local", times = attn_home()),
-                                rep("nonlocal",times = fac_intl()),
-                                rep("local", times = fac_home())
+                                 rep("nonlocal", times = attn_intl()),
+                                 rep("local", times = attn_home()),
+                                 rep("nonlocal",times = fac_intl()),
+                                 rep("local", times = fac_home())
                         ),
-                        accommodation = c(
-                                rep("hotel",times = no_hotel()),
-                                rep("home",times = no_home())
-                        ),
+                         accommodation = c(
+                                 rep("hotel",times = no_hotel()),
+                                 rep("home",times = no_home())
+                         ),
                         eventdur = rep(dur(), times = (attn() + fac()))
                         #if else doesnt work because it is not assigned yet!
                 )
-                #then their state of accommodation is assigned.
-                df$carbon_accomo_cost <- ifelse(df$accommodation == "hotel",20.8,0)
-                #then lets multiply carbon accommo total by duration of course
-                df$total_carbon_accomo <- df$carbon_accomo_cost * df$eventdur
-                #then dataframe is sorted based on mode of travel
-                df<-df[order(df$travel),]
-                # then we assigned distances computed
-                df$dist <- ifelse(df$travel == "local",distloc(),distintl())
-                
-                # see read me for rationale of this
-                df$carbon_travel_cost <- ifelse(df$travel == "local",0.03549,0.14062)
-                # now total travel 
-                df$total_carbon_travel <- (df$carbon_travel_cost * 2 * df$dist)
-                df$sum_carbon <- df$total_carbon_travel + df$total_carbon_accomo
-                #dont forget to return a reactive dataframe back
-                #change to factors for
-                df$type <- as.factor(df$type)
-                df$accommodation <- as.factor(df$accommodation)
-                df$travel <- as.factor(df$travel)
+                 #then their state of accommodation is assigned.
+                 df$carbon_accomo_cost <- ifelse(df$accommodation == "hotel",20.8,0)
+                 #then lets multiply carbon accommo total by duration of course
+                 df$total_carbon_accomo <- df$carbon_accomo_cost * df$eventdur
+                 #then dataframe is sorted based on mode of travel
+                 df<-df[order(df$travel),]
+                 # then we assigned distances computed
+                 df$dist <- ifelse(df$travel == "local",distloc(),distintl())
+                 
+                 # see read me for rationale of this
+                 df$carbon_travel_cost <- ifelse(df$travel == "local",0.03549,0.14062)
+                 # now total travel 
+                 df$total_carbon_travel <- (df$carbon_travel_cost * 2 * df$dist)
+                 df$sum_carbon <- df$total_carbon_travel + df$total_carbon_accomo
+                 #dont forget to return a reactive dataframe back
+                 #change to factors for
+                 df$type <- as.factor(df$type)
+                 df$accommodation <- as.factor(df$accommodation)
+                 df$travel <- as.factor(df$travel)
                 df
          })
-       
+         df2 <- reactive({
+                d1 <- daf() %>% select("travel", "total_carbon_travel") 
+                names(d1) <- c("breakdown","c_carbon")
+                d2 <- daf() %>% select("accommodation","total_carbon_accomo")
+                names(d2) <- c("breakdown", "c_carbon")
+                df2 <- rbind(d1,d2)
+                df2$frac <- df2$c_carbon / sum(df2$c_carbon)
+                df2$ymax <- cumsum(df2$frac)
+                df2$ymin <- c(0,head(df2$ymax, n = -1))
+                df2
+         })
          
         # reactive slider selection based on default setting of local vs. international
         output$uiv3 <- renderUI({
@@ -303,14 +331,44 @@ server <- function(input, output) {
                 daf()
                 }) 
         output$test2 <- renderPrint({
-                daf()
+                df2()
                 #summary(daf())
         })
-        output$carboncostPlot <- renderPlotly({
-                plot_ly(daf(), x = ~travel, y= ~total_carbon  )
+        output$carboncostPlot <- renderPlot({
+                ggplot(daf(), aes(x = travel, y= sum_carbon))+
+                        geom_col()
         })
+        output$tmap <- renderPlot({
+                ggplot(df2(), aes(ymax = ymax, ymin = ymin, xmax =4, xmin = 3, fill = breakdown))+
+                        geom_rect() +
+                        #geom_label( x = 3.5, aes( y = labelPosition, label = label),size = 6) +
+                        scale_fill_brewer(palette = 4) +
+                        coord_polar(theta = "y") + 
+                        xlim(c(2,4)) +
+                        theme_void()
+        })
+        #output$tmap <- renderPlot({
+        #        treemap::treemap(
+        #                daf(), #dataframe obj
+        #                index = c("travel", "accommodation"),#list of categorical vars
+        #                vSize = "sum_carbon",
+        #                type = "index",
+        #                palette = "Reds",
+        #                title = "Fig 2"
+        #                
+        #        )
+        #})
+                # plot_ly(
+                #         daf(), x = ~travel, y= ~ sum_carbon
+                #         ) |>
+                #         layout(
+                #                 title = list(
+                #                         text = "Carbon cost of event",
+                #                         font = list(family = "Source Sans pro")
+                #                 )
+                #                 
+                #         )
 
-    
 }
 
 # Run the application 
