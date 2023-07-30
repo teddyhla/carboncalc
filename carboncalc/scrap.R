@@ -64,9 +64,13 @@ data <- data.frame(
         carbon = rnorm(45, mean = 50, sd = 2)
 )
 
+data <- aggregate(data$carbon, by = list(data$category), FUN = sum)
+names(data) <- c("category","carbon")
+
 data$frac <- data$carbon / sum(data$carbon)
 data$ymax <- cumsum(data$frac)
 data$ymin <- c(0,head(data$ymax, n =-1))
+data$labelposition <- (data$ymax + data$ymin)/2
 
 #data$label <- paste0 (data$category , "\n value: ", data$carbon)
 #data$labelPosition <- (data$ymax + data$ymin) / 2 
@@ -76,7 +80,9 @@ ggplot(data, aes(ymax = ymax, ymin = ymin, xmax =4, xmin = 3, fill = category))+
         geom_rect() +
         #geom_label( x = 3.5, aes( y = labelPosition, label = label),size = 6) +
         scale_fill_brewer(palette = 4) +
+        geom_text(x=2 ,aes(y = labelposition, label = frac)) +
         coord_polar( theta = "y") + 
         xlim( c(2,4)) +
         theme_void()
-        
+
+waffle::waffle(vals) + ggthemes::scale_fill_tableau(name = NULL)

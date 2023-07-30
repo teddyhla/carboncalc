@@ -9,9 +9,10 @@ library(shiny)
 #library(shinyBS)
 #for adding tooltips
 library(plotly)
-library(dplyr)
+#library(dplyr)
 library(tidyr)
-library(magrittr)
+#library(magrittr)
+library(waffle)
 library(ggplot2)
 library(bslib)
 reactlog::reactlog_enable()
@@ -81,10 +82,10 @@ ui <- fluidPage(theme = bslib::bs_theme(bootswatch = "sandstone"),
                                         column(6,
                                                 plotOutput("tmap")
                                         )
+                                    ),
+                                    fluidRow(
+                                            verbatimTextOutput("test2")
                                     )
-                                    #fluidRow(
-                                    #        verbatimTextOutput("test2")
-                                    #)
                                     # plotlyOutput("carboncostPlot"),
                                      
                                     # DT::dataTableOutput('redf'),
@@ -280,7 +281,7 @@ server <- function(input, output) {
                  # then they are classed as faculty or attendees
                  # then their mode of travel is assigned
                 df <- data.frame(
-                        id = (1:(attn() + fac())),
+                        #id = (1:(attn() + fac())),
                         type = c(rep("attendee",times = attn()), rep("faculty",times = fac())),
                         travel = c(
                                  rep("nonlocal", times = attn_intl()),
@@ -317,14 +318,21 @@ server <- function(input, output) {
                 df
          })
          df2 <- reactive({
-                d1 <- daf() %>% select("travel", "total_carbon_travel") 
+                d1 <- daf()[,c("travel", "total_carbon_travel")]
                 names(d1) <- c("breakdown","c_carbon")
-                d2 <- daf() %>% select("accommodation","total_carbon_accomo")
+                d2 <- daf()[,c("accommodation","total_carbon_accomo")]
                 names(d2) <- c("breakdown", "c_carbon")
+                d2$breakdown <- as.factor(d2$breakdown)
                 df2 <- rbind(d1,d2)
-                df2$frac <- df2$c_carbon / sum(df2$c_carbon)
-                df2$ymax <- cumsum(df2$frac)
-                df2$ymin <- c(0,head(df2$ymax, n = -1))
+                df2 <- aggregate(df2$c_carbon, by = list(df2$breakdown), FUN = sum)
+                names(df2) <- c("breakdown","c_carbon")
+                df2$frac <- round((df2$c_carbon / sum(df2$c_carbon))*100, 2)
+                #val <- df2$c_carbon
+                #names(val) <- paste0(df2$breakdown,"(",df2$frac,"%)")
+
+                
+                #df2$ymax <- cumsum(df2$frac)
+                #df2$ymin <- c(0,head(df2$ymax, n = -1))
                 df2
          })
          
@@ -342,13 +350,24 @@ server <- function(input, output) {
                         geom_col()
         })
         output$tmap <- renderPlot({
-                ggplot(df2(), aes(ymax = ymax, ymin = ymin, xmax =4, xmin = 3, fill = breakdown))+
-                        geom_rect() +
-                        #geom_label( x = 3.5, aes( y = labelPosition, label = label),size = 6) +
-                        scale_fill_brewer(palette = 4) +
-                        coord_polar(theta = "y") + 
-                        xlim(c(2,4)) +
-                        theme_void()
+                
+                ggplot(df2(), aes(x = reorder(breakdown,-frac),y= frac)) +
+                               geom_col() + 
+                        coord_flip()
+                #waffle(val(), title = "Percentage of carbon costs")
+                
+                #ggplot(df2(), aes(ymax = ymax, ymin = ymin, xmax =4, xmin = 3, fill = breakdown))+
+                #        geom_rect() +
+                #        #geom_label( x = 3.5, aes( y = labelPosition, label = label),size = 6) +
+                #        scale_fill_brewer(palette = 4) +
+                #        geom_label(aes(label = frac)) +
+                #        coord_polar(theta = "y") + 
+                #        xlim(c(2,4)) +
+                #        theme_void()
+        })
+        output$txtans <- renderText({
+                s2 <- sum(df2()$c_carbon)
+                sprintf("Event with the given variables on the left,combined carbon cost of travel and accommodation is %s.",s2)
         })
         #output$tmap <- renderPlot({
         #        treemap::treemap(
