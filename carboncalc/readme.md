@@ -67,6 +67,83 @@ $$ Total\quad carbon \quad cost \quad per \quad person = \sum_{n=1}^{2} travel  
 > ?May be we should wrangle own data using european air travel dataset
 ## Known bugs 
 
+## Learnings
+- I was making it too complicated by creating a dataframe. 
+- I should ideally just use a vector.
+
+This complicated piece of code is using it to generate a reactive dataframe, where a vector would have sufficed. 
+
+daf <- reactive({
+                 #first an id is assigned based on number of attendees and faculty
+                 # then they are classed as faculty or attendees
+                 # then their mode of travel is assigned
+                df <- data.frame(
+                        #id = (1:(attn() + fac())),
+                        type = c(rep("attendee",times = attn()), rep("faculty",times = fac())),
+                        travel = c(
+                                 rep("nonlocal", times = attn_intl()),
+                                 rep("local", times = attn_home()),
+                                 rep("nonlocal",times = fac_intl()),
+                                 rep("local", times = fac_home())
+                        ),
+                         accommodation = c(
+                                 rep("hotel",times = no_hotel()),
+                                 rep("home",times = no_home())
+                         ),
+                        eventdur = rep(dur(), times = (attn() + fac()))
+                        #if else doesnt work because it is not assigned yet!
+                )
+                 #then their state of accommodation is assigned.
+                 df$carbon_accomo_cost <- ifelse(df$accommodation == "hotel",20.8,0)
+                 #then lets multiply carbon accommo total by duration of course
+                 df$total_carbon_accomo <- df$carbon_accomo_cost * df$eventdur
+                 #then dataframe is sorted based on mode of travel
+                 df<-df[order(df$travel),]
+                 # then we assigned distances computed
+                 df$dist <- ifelse(df$travel == "local",distloc(),distintl())
+                 
+                 # see read me for rationale of this
+                 df$carbon_travel_cost <- ifelse(df$travel == "local",0.03549,0.14062)
+                 # now total travel 
+                 df$total_carbon_travel <- (df$carbon_travel_cost * 2 * df$dist)
+                 df$sum_carbon <- df$total_carbon_travel + df$total_carbon_accomo
+                 #dont forget to return a reactive dataframe back
+                 #change to factors for
+                 df$type <- as.factor(df$type)
+                 df$accommodation <- as.factor(df$accommodation)
+                 df$travel <- as.factor(df$travel)
+                df
+         })
+         df2 <- reactive({
+                d1 <- daf()[,c("travel", "total_carbon_travel")]
+                names(d1) <- c("breakdown","c_carbon")
+                d2 <- daf()[,c("accommodation","total_carbon_accomo")]
+                names(d2) <- c("breakdown", "c_carbon")
+                d2$breakdown <- as.factor(d2$breakdown)
+                df2 <- rbind(d1,d2)
+                df2 <- aggregate(df2$c_carbon, by = list(df2$breakdown), FUN = sum)
+                names(df2) <- c("breakdown","c_carbon")
+                df2$frac <- round((df2$c_carbon / sum(df2$c_carbon))*100, 2)
+                #val <- df2$c_carbon
+                #names(val) <- paste0(df2$breakdown,"(",df2$frac,"%)")
+
+                
+                #df2$ymax <- cumsum(df2$frac)
+                #df2$ymin <- c(0,head(df2$ymax, n = -1))
+                df2
+         })
+         
+         
+### Making complicated doughnut plots
+ ggplot(df2(), aes(ymax = ymax, ymin = ymin, xmax =4, xmin = 3, fill = breakdown))+
+                #        geom_rect() +
+                #        #geom_label( x = 3.5, aes( y = labelPosition, label = label),size = 6) +
+                #        scale_fill_brewer(palette = 4) +
+                #        geom_label(aes(label = frac)) +
+                #        coord_polar(theta = "y") + 
+                #        xlim(c(2,4)) +
+                #        theme_void()
+
 ## Future direction
 - bootswatch theme [/]
 - embed in custom 
