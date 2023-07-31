@@ -40,13 +40,13 @@ ui <- fluidPage(
                                          numericInput("attnd",
                                                      "Number of attendees:",
                                                      min = 1,
-                                                     max = 200,
+                                                     max = 1000,
                                                      step = 1,
                                                      value = 30),
                                          numericInput("fac",
                                                      "Number of faculty:",
                                                      min = 1,
-                                                     max = 20,
+                                                     max = 1000,
                                                      value = 5),
                                          uiOutput("uiv3"),
                                          uiOutput("uiv4"),
@@ -92,10 +92,10 @@ ui <- fluidPage(
                              column(12,
                                     h3("Assumptions"),
                                     h4("Duration of course"),
-                                    p("We assumed that courses are run over two days and thus default value is 2 but maximum value is 7 days. Thus, if not staying at home, attendees and faculty will require 2-night hotel stay."),
+                                    p("We set a default value of event as 2 days requiring 2 overnight hotel stay."),
                                     p("We assumed that all international attendees are not sharing rooms in a hotel and not staying locally with friends and family."),
                                     h4("Carbon cost of venue & equipment"),
-                                    p("We have not calculated the carbon cost of equipments and venue set up. This is because an event type will determine equipments, and irregardless of locality, all events are likely to require venue and equipment."),
+                                    p("We have not calculated the carbon cost of catering, equipments transport, waste and venue set up. This is because these costs are likely to be similar for local / non-local events."),
                                     h4("Type of transports"),
                                     p("Based on EU travel data, we assumed that all international travels are via flights, travelling in 'economy class' as direct flights."),
                                     p("Based on UK National Travel Survey[1], surface rail remains the most common mode of transport for average miles travelled per person per year. Therefore, we assumed that 'surface rail' will be used for local travel. Based on average travel durations in the UK and European Union, for local travel we have assumed a 75km travel distance and for international air travel we have assumed a 1000 km distance."),
@@ -146,7 +146,7 @@ server <- function(input, output) {
                              min = 0,
                              max = input$attnd,
                              step = 1,
-                             value = 3
+                             value = 1
                              
                 )
         })
@@ -156,7 +156,7 @@ server <- function(input, output) {
                              min = 0, 
                              max = input$fac,
                              step = 1,
-                             value = 3
+                             value = 1
                              
                 )
         })
@@ -166,7 +166,7 @@ server <- function(input, output) {
                              min = 0,
                              max = (input$attnd + input$fac + 15),
                              step = 1,
-                             value = 3
+                             value = 1
                 )
         })
         # here we will create reactive variables
