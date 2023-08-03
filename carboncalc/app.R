@@ -10,6 +10,28 @@ library(ggplot2)
 library(bslib)
 reactlog::reactlog_enable()
 
+#custom function for generating reactive ui output based on 1,2,3 vars 
+uvfunc <- function(id, text, total){
+        renderUI({
+                numericInput(id,
+                             label = text,
+                             min = 0,
+                             max = total, 
+                             # max = input$attnd,
+                             step = 1,
+                             value = 1
+                             
+                )
+        })
+}
+
+sumtravel <- function(x, y, shape, scale, constant){
+        vals <- rgamma(n = (x+y), shape = shape, scale = scale)
+        vals <- vals * constant * 2
+        ans <- sum(vals)
+        ans
+}
+
 # Define UI for application that draws a histogram
 ui <- fluidPage(
         # theme = bslib::bs_theme(bootswatch = "sandstone")   (if theme desires)     
@@ -29,13 +51,8 @@ ui <- fluidPage(
             tabPanel("Simulations",
                      br(),
                     sidebarLayout(
-                            sidebarPanel("Select individually", width=2,
-                                         br(),
-                                        #br(),
-                                        # radioButtons("defset","Default Settings:", choices= c(
-                                        #         "Local" = "loc",
-                                        #         "International" = "intl"
-                                        # )),
+                            sidebarPanel( width=2,
+                                         h4("Select global variables:"),
                                          br(),
                                          numericInput("attnd",
                                                      "Total number of attendees:",
@@ -48,16 +65,23 @@ ui <- fluidPage(
                                                      min = 1,
                                                      max = 1000,
                                                      value = 5),
+                                        numericInput("duration",
+                                                     "Duration of event in days:",
+                                                     min = 1,
+                                                     max = 7,
+                                                     step = 1,
+                                                     value = 2),
+                                        hr(),
+                                        h5("Select variables for Event-1:"),
                                          uiOutput("uiv3"),
                                          uiOutput("uiv4"),
                                          uiOutput("uiv5"),
-                                         numericInput("duration",
-                                                      "Duration of event in days:",
-                                                      min = 1,
-                                                      max = 7,
-                                                      step = 1,
-                                                      value = 2
-                                                      )
+                                        hr(),
+                                        h5("Select variables for Event-2:"),
+                                         uiOutput("uiv6"),
+                                         uiOutput("uiv7"),
+                                         uiOutput("uiv8")
+                                         
                             ),
                             
                             # Show output plots 
@@ -140,64 +164,51 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-        output$uiv3 <- renderUI({
-                numericInput("p_attnd",
-                             "Number of international attendees",
-                             min = 0,
-                             max = input$attnd,
-                             step = 1,
-                             value = 1
-                             
-                )
-        })
-        output$uiv4 <- renderUI({
-                numericInput("fac_attnd",
-                             "Number of international faculty",
-                             min = 0, 
-                             max = input$fac,
-                             step = 1,
-                             value = 1
-                             
-                )
-        })
-        output$uiv5 <- renderUI({
-                numericInput("accom",
-                             "Number staying in hotels",
-                             min = 0,
-                             max = (input$attnd + input$fac + 15),
-                             step = 1,
-                             value = 1
-                )
-        })
+        output$uiv3 <- uvfunc(id = "p1_attnd",text = "Number of international attendees", total = input$attnd)
+        output$uiv4 <- uvfunc(
+                id = "f1_attnd", text = "Number of international faculty", total = input$fac
+        )
+        output$uiv5 <- uvfunc(
+                id = "e1_accom",text = "Number staying in hotels", total = (input$attnd + input$fac + 15)
+        )
+        
+        output$uiv6 <- uvfunc(id = "p2_attnd",text = "Number of international attendees", total = input$attnd)
+        output$uiv7 <- uvfunc(
+                id = "f2_attnd", text = "Number of international faculty", total = input$fac
+        )
+        output$uiv8 <- uvfunc(
+                id = "e2_accom",text = "Number staying in hotels", total = (input$attnd + input$fac + 15)
+        )
+       
         # here we will create reactive variables
         # key logics - for see readme.md
         
         attn <- reactive(ifelse(input$attnd == 0, 0, input$attnd))
         fac <- reactive(ifelse(input$fac == 0, 0, input$fac))
-        attn_intl <- reactive(ifelse(input$p_attnd == 0, 0,input$p_attnd))
-        attn_home <- reactive(
-                 attn() - attn_intl()
+        e1attn_intl <- reactive(ifelse(input$p1_attnd == 0, 0,input$p1_attnd))
+        e1attn_home <- reactive(
+                 attn() - e1attn_intl()
         )
-        fac_intl <- reactive(ifelse(input$fac_attnd == 0, 0, input$fac_attnd))
-        fac_home <- reactive(
-                 fac() - fac_intl()
+        e1fac_intl <- reactive(ifelse(input$f1_attnd == 0, 0, input$f1_attnd))
+        e1fac_home <- reactive(
+                 fac() - e1fac_intl()
         )
         #here we calculte carbon cost of accommodation which is number of rooms * event dur * cost
-        carbon_hotel <- reactive(
-                input$accom * input$duration * 10.4
+        e1carbon_hotel <- reactive(
+                input$e1accom * input$duration * 10.4
         )
         
-        distloc <- reactive(
-                 sum(rgamma(
-                         n = (attn_home() + fac_home()), shape = 10, scale = 5
-                 ) * 0.03549 * 2) 
+        e1distloc <- reactive(
+                sumtravel(
+                        x = e1attn_home(), y = e1fac_home(), shape = 10, scale = 5, 
+                        constant = 0.03549)
                  #here we multiply by constant of local travels and return journey 2
         )
          
-        distintl <- reactive(
-                 sum(rgamma(
-                         n = (input$p_attnd + input$fac_attnd), shape = 1500, scale = 0.75
-                 ) * 0.14062 * 2)
+        e1distintl <- reactive(
+                sumtravel(
+                        x = input$p1_attnd, y = input$fac_attnd, shape = 1500, scale = 0.75,
+                        constant = 0.14062)
                  #here we multiply by constant of nonlocal travels and return journey 2
         )
         

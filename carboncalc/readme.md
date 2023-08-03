@@ -157,6 +157,8 @@ daf <- reactive({
 4. Plötz P, Jakobsson N, Sprei F (2017) On the distribution of individual daily driving distances. Transportation Research Part B: Methodological 101:213–227. https://doi.org/10.1016/j.trb.2017.04.008
 5. Veloso M, Phithakkitnukoon S, Bento C, et al (2011) Exploratory Study of Urban Flow using Taxi Traces
 
+# current workign commit
+- 5ec5f9d
 
 ## Session Info
 
