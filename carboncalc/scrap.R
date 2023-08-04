@@ -86,3 +86,67 @@ ggplot(data, aes(ymax = ymax, ymin = ymin, xmax =4, xmin = 3, fill = category))+
         theme_void()
 
 waffle::waffle(vals) + ggthemes::scale_fill_tableau(name = NULL)
+
+
+
+# need to practice creating a vector or list ------------------------------
+
+a <- c("event1","event1","event2","event2")
+b <- c("home","hotel","home","hotel")
+d <- c(5,4,3,2)
+e <- "manip"
+df <- data.frame(a,b,d,e)
+        
+
+# then just do rbind
+
+gen <- function(a, b, c, d, e, f, g){
+        # a = total attendee, b = total fac, c = intl attendee , d = intl fac
+        # e = duration, f = hotel, g = event type
+        event <- g
+        breakdown <- c("local travel", "intl travel", "hotel stay","home")
+        hotelc <- f * e * 10.4 # dur event * no hotel rooms * unit cost
+        # local popn = total attendee - intl attendee & total fac - intl fac
+        localc <- sumtravel(x= (a - c), y=(b-d), shape= 10, scale= 5, constant = 0.03549)
+        intlc <- sumtravel(x = c,y = d , shape =1500, scale = 0.75, constant = 0.14062)
+        carbon_values <- c(localc, intlc, hotelc, 0)
+        df <- data.frame(event, breakdown, carbon_values)
+        df$perc <- round((df$carbon_values/sum(df$carbon_values)*100),2)
+        df
+}
+
+txrd <- function(event, df){
+        sprintf("Total carbon cost for %s is %s kilograms of carbon dioxide equivalent",event, round(sum(df()$carbon_values),2))
+}
+
+
+### spare code
+attn <- reactive(ifelse(input$attnd == 0, 0, input$attnd))
+fac <- reactive(ifelse(input$fac == 0, 0, input$fac))
+e1attn_intl <- reactive(ifelse(input$p1_attnd == 0, 0,input$p1_attnd))
+e1attn_home <- reactive(
+        attn() - e1attn_intl()
+)
+e1fac_intl <- reactive(ifelse(input$f1_attnd == 0, 0, input$f1_attnd))
+e1fac_home <- reactive(
+        fac() - e1fac_intl()
+)
+#here we calculte carbon cost of accommodation which is number of rooms * event dur * cost
+e1carbon_hotel <- reactive(
+        input$e1accom * input$duration * 10.4
+)
+
+e1distloc <- reactive(
+        sumtravel(
+                x = e1attn_home(), y = e1fac_home(), shape = 10, scale = 5, 
+                constant = 0.03549)
+        #here we multiply by constant of local travels and return journey 2
+)
+
+e1distintl <- reactive(
+        sumtravel(
+                x = input$p1_attnd, y = input$fac_attnd, shape = 1500, scale = 0.75,
+                constant = 0.14062)
+        #here we multiply by constant of nonlocal travels and return journey 2
+)
+        
