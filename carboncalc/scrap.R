@@ -149,4 +149,16 @@ e1distintl <- reactive(
                 constant = 0.14062)
         #here we multiply by constant of nonlocal travels and return journey 2
 )
+
+## 
+
+# need DiagrammeR
+
+DiagrammeR::grViz("digraph{
+
+Total Attendees -> Event
+Total Faculty -> Event
+
+
+}")
         

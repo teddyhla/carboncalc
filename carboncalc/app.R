@@ -1,4 +1,4 @@
-# Carbon cost of POCUS courses
+# Carbon cost of Events
 # This is a Shiny web application.
 #
 # Conceived by A Wong, M Zawadka and T Hla
@@ -8,6 +8,7 @@
 library(shiny)
 library(ggplot2)
 library(bslib)
+library(plotly)
 reactlog::reactlog_enable()
 
 #custom function for generating reactive ui output based on 1,2,3 vars 
@@ -31,15 +32,15 @@ sumtravel <- function(x, y, shape, scale, constant){
 #gen function takes 7 arguments and generates a dataframe of variable and it pulls sumtravel function
 gen <- function(a, b, c, d, e, f, g){
         # a = total attendee, b = total fac, c = intl attendee , d = intl fac
-        # e = duration, f = hotel, g = event type
-        event <- g
+        # e = duration, f = hotel, g = model type
+        model <- g
         breakdown <- c("local travel", "intl travel", "hotel stay","home")
         hotelc <- f * e * 10.4 # dur event * no hotel rooms * unit cost
         # local popn = total attendee - intl attendee & total fac - intl fac
         localc <- sumtravel(x= (a - c), y=(b-d), shape= 10, scale= 5, constant = 0.03549)
         intlc <- sumtravel(x = c,y = d , shape =1500, scale = 0.75, constant = 0.14062)
         carbon_values <- c(localc, intlc, hotelc, 0)
-        df <- data.frame(event, breakdown, carbon_values)
+        df <- data.frame(model, breakdown, carbon_values)
         df$perc <- round((df$carbon_values/sum(df$carbon_values)*100),2)
         df
 }
@@ -51,14 +52,14 @@ txrd <- function(a, df){
 
 #lets define a custom ggplot theme
 theme_cc <- function(){
-        font <- "sans"
+        font <- "Arial"
         theme_minimal() %+replace%
                 theme(
                         #panel.grid.major = element_blank(),
                         panel.grid.minor = element_blank(),
                         plot.title = element_text(
                                 family = font,
-                                size = 20,
+                                size = 16,
                                 face = 'bold',
                                 hjust =0 ,
                                 vjust = 2,
@@ -67,9 +68,9 @@ theme_cc <- function(){
                                 family = font,
                                 size = 16,
                         ),
-                        axis.text.x = element_text(size = 14,vjust = 2),
-                        axis.text.y = element_text(size=14),
-                        legend.text = element_text(size =12 )
+                        axis.text.x = element_text(family = font,size = 12,vjust = 2),
+                        axis.text.y = element_text(family = font, size=12),
+                        legend.text = element_text(family = font, size =11 )
                 )
 }
 
@@ -79,7 +80,7 @@ ui <- fluidPage(
 
     # Application title
     br(),
-    titlePanel("Local vs. non-local events: an interactive carbon cost calculator"),
+    titlePanel("Event carbon cost calculator"),
     
     #horizontal panel
     p("Explore the carbon cost of events by manipulating variables below. Please see 'User Guide & Assumptions' for details."),
@@ -113,12 +114,12 @@ ui <- fluidPage(
                                                      step = 1,
                                                      value = 2),
                                         hr(),
-                                        h5("Select variables for Event-1:"),
+                                        h5("Select variables for Model 1:"),
                                          uiOutput("uiv3"),
                                          uiOutput("uiv4"),
                                          uiOutput("uiv5"),
                                         hr(),
-                                        h5("Select variables for Event-2:"),
+                                        h5("Select variables for Model 2:"),
                                          uiOutput("uiv6"),
                                          uiOutput("uiv7"),
                                          uiOutput("uiv8")
@@ -129,10 +130,10 @@ ui <- fluidPage(
                             mainPanel(
                                     fluidRow(
                                         column(6,
-                                                plotOutput("carboncostPlot")
+                                                plotlyOutput("carboncostPlot")
                                         ),
                                         column(6,
-                                                plotOutput("tmap")
+                                                plotlyOutput("tmap")
                                         )
                                     ),
                                     br(),
@@ -142,7 +143,7 @@ ui <- fluidPage(
                                             br(),
                                             tags$li(h5(textOutput("txt2ans"))),
                                             br(),
-                                            tags$li("Average UK household monthly emission is 91.7 kilograms of carbondioxide equivalent.")
+                                            tags$li("Driving 4-seater car with average efficiency diesel fuel for 100km approximately consumes 39 kilograms of carbondioxide equivalent.")
                                     ),
                                     fluidRow(
                                             verbatimTextOutput("test"),
@@ -233,17 +234,17 @@ server <- function(input, output) {
         # key logics - for see readme.md
         # make a reactive dataframe for event1 
         edf1 <- reactive({
-                gen(a= input$attnd,b=input$fac,c=input$p1_attnd,d =input$f1_attnd,e = input$duration,f= input$e1_accom,g = "event1")
+                gen(a= input$attnd,b=input$fac,c=input$p1_attnd,d =input$f1_attnd,e = input$duration,f= input$e1_accom,g = "Model 1")
         })
         #make a reactive dataframe for event2
         edf2 <- reactive({
-                gen(a= input$attnd, b= input$fac, c=input$p2_attnd, d=input$f2_attnd, e= input$duration,f=input$e2_accom, g="event2")
+                gen(a= input$attnd, b= input$fac, c=input$p2_attnd, d=input$f2_attnd, e= input$duration,f=input$e2_accom, g="Model 2")
         })
         
         daf <- reactive({
                 df <- rbind(edf1(),edf2())
                 df$breakdown <- as.factor(df$breakdown)
-                df$event <- as.factor(df$event)
+                df$model <- as.factor(df$model)
                 df
          })
         
@@ -251,33 +252,36 @@ server <- function(input, output) {
                 daf()[grepl("travel", daf()$breakdown), ]
         })
         
-        output$carboncostPlot <- renderPlot({
+        output$carboncostPlot <- renderPlotly({
                 
-                ggplot(df_filtered(), aes(x = breakdown, y= carbon_values, fill = event))+
-                        geom_col(position = "dodge") +
-                        scale_fill_brewer(palette = "Set1")+
-                        labs(
-                                title = "Carbon cost of travel",
-                                x = "Type of travel",
-                                y = "kilograms of Carbondioxide equivalent"
-                        )+
-                        theme_cc()
+                plot1 <-ggplot(df_filtered(), aes(x = breakdown, y= carbon_values, fill = model))+
+                              geom_col(position = "dodge") +
+                              scale_fill_brewer(palette = "Set1")+
+                              labs(
+                                      title = "Carbon cost of travel",
+                                      x = "Type of travel",
+                                      y = "kilograms of Carbondioxide equivalent"
+                              )+
+                              theme_cc()
+                plotly::ggplotly(plot1,tooltip = c("y","text","fill"))
         })
-        output$tmap <- renderPlot({
+        output$tmap <- renderPlotly({
                 ab = daf()
-                ggplot(ab, aes(x = reorder(breakdown,-perc),y= perc, fill = event)) +
-                        geom_col(position = "dodge") + 
-                        scale_fill_brewer(palette = "Set1")+
-                        coord_flip() +
-                        labs(
-                                title = "Contribution of activities",
-                                x = "Activity",
-                                y = "Percentage of total carbon cost"
-                        ) +
-                        theme_cc()
+                plot2 <-ggplot(ab, aes(x = reorder(breakdown,-perc),y= perc, fill = model)) +
+                            geom_col(position = "dodge") + 
+                            scale_fill_brewer(palette = "Set1")+
+                            coord_flip() +
+                            labs(
+                                    title = "Contribution of activities",
+                                    x = "Activity",
+                                    y = "Percentage of total carbon cost"
+                            ) +
+                            theme_cc()
+                plotly::ggplotly(plot2,tooltip = c("y","text","fill"))
+                
         })
-        output$txt1ans <- renderText(txrd(a = "event-1", df = edf1))
-        output$txt2ans <- renderText(txrd(a="event-2",df = edf2))
+        output$txt1ans <- renderText(txrd(a = "Model 1", df = edf1))
+        output$txt2ans <- renderText(txrd(a="Model 2",df = edf2))
         
         output$test <- renderPrint(
                 daf()
