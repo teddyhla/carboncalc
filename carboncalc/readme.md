@@ -1,4 +1,4 @@
-# Carbon Cost Calculator for POCUS
+# Carbon Cost Calculator for Events
 
 ## Team
 
@@ -18,7 +18,7 @@
 
 > 0.03549 kgCO2 e per unit kilometers per person
 
-3. We assumed that each participant / instructors are staying in separate individual rooms without sharing for two nights.
+3. We assumed that each participant / instructors are staying in separate individual rooms without sharing for duration of the event.
 
 > 10.4 kgCO2 e per room per night per person in the UK 
 
@@ -26,9 +26,9 @@
 
 5. We assumed that all travels are a two-way (return) journey
 
-6. We assumed that all travels are normally distributed around a mean (user-set) and standard deviation(set at 10km for local and 50km for international travels)
+6. We assumed that all travels are normally distributed around a mean of 75km for local and 1000km for international travels.
 
-7.  We have deliberately not included the carbon cost of POCUS venue and equipments transfer. This is because these are likely to be similar whether a course is local or international.
+7.  We have  not included the carbon cost of POCUS venue, waste and equipments transfer. This is because these are likely to be similar whether a course is local or international.
 
 ## Variables
 
@@ -36,11 +36,11 @@ attendee = number of attendees
 
 faculty = number of faculty
 
-percentage of international attendees = intl_attn_perc
+number of international attendees = intl_attn_perc
 
-percentage of international faculty = intl_fac_perc
+number of international faculty = intl_fac_perc
 
-percentage staying in hotels = hotel_perc
+number of hotel rooms = hotel_perc
 
 local travel distance = loc_dist
 
@@ -48,15 +48,9 @@ international travel dist = int_disc
 
 ## Internal Logic
 
-- Given attendees can be 'local' or 'international', number of international attendees(variable 3) cannot exceed total number of attendees (variable 1). 
+- Given attendees can be 'local' or 'international', number of international attendees) cannot exceed total number of attendees. 
 
-- Given faculty can be 'local' or 'international', number of international faculty (variable 4) cannot exceed total number of faculty (variable 2).
-
-- Number staying in hotels (variable 5) cannot exceed as a maximum total number of attendees and faculty(variable 1 and variable 2). This scenario would be where all the attendees and faculty stay in 'hotel' regardless of local or international travels. Conversely, the minimum cannot exceed sum of international attendees and faculty (i.e., all international attendees and faculty must stay in hotels for accommodation).
-
-- Based on UK National Travel Survey[1], surface rail remains the most common mode of transport for average miles travelled per person per year. As a result, for local travel, we assumed that 'surface rail' will be used as most common mode of travel. For 'typical' local courses, we have modelled using a mean distance of 100km (approximately 1 hour 15 mins surface rail journey time) as a maximum upperlimit of acceptable commute.
-
-- Based on Eurocontrol, an average flight distance travelled in European Union is 981km and as a result, we have used as a 1000 km as default for international flight. 
+- Given faculty can be 'local' or 'international', number of international faculty cannot exceed total number of faculty.
 
 - Most travel distances tend to follow gamma distribution and we have modelled our distance parameter as such.
 
@@ -64,137 +58,123 @@ international travel dist = int_disc
 
 $$ Total\quad carbon \quad cost \quad per \quad person = \sum_{n=1}^{2} travel  +  \sum_{n=1}^{2} accommodation $$
 
-> ?May be we should wrangle own data using european air travel dataset
 ## Known bugs 
 
-## Learnings
-- I was making it too complicated by creating a dataframe. 
-- I should ideally just use a vector.
+At the moment, there are no known bugs. 
 
-This complicated piece of code is using it to generate a reactive dataframe, where a vector would have sufficed. 
 
-daf <- reactive({
-                 #first an id is assigned based on number of attendees and faculty
-                 # then they are classed as faculty or attendees
-                 # then their mode of travel is assigned
-                df <- data.frame(
-                        #id = (1:(attn() + fac())),
-                        type = c(rep("attendee",times = attn()), rep("faculty",times = fac())),
-                        travel = c(
-                                 rep("nonlocal", times = attn_intl()),
-                                 rep("local", times = attn_home()),
-                                 rep("nonlocal",times = fac_intl()),
-                                 rep("local", times = fac_home())
-                        ),
-                         accommodation = c(
-                                 rep("hotel",times = no_hotel()),
-                                 rep("home",times = no_home())
-                         ),
-                        eventdur = rep(dur(), times = (attn() + fac()))
-                        #if else doesnt work because it is not assigned yet!
-                )
-                 #then their state of accommodation is assigned.
-                 df$carbon_accomo_cost <- ifelse(df$accommodation == "hotel",20.8,0)
-                 #then lets multiply carbon accommo total by duration of course
-                 df$total_carbon_accomo <- df$carbon_accomo_cost * df$eventdur
-                 #then dataframe is sorted based on mode of travel
-                 df<-df[order(df$travel),]
-                 # then we assigned distances computed
-                 df$dist <- ifelse(df$travel == "local",distloc(),distintl())
-                 
-                 # see read me for rationale of this
-                 df$carbon_travel_cost <- ifelse(df$travel == "local",0.03549,0.14062)
-                 # now total travel 
-                 df$total_carbon_travel <- (df$carbon_travel_cost * 2 * df$dist)
-                 df$sum_carbon <- df$total_carbon_travel + df$total_carbon_accomo
-                 #dont forget to return a reactive dataframe back
-                 #change to factors for
-                 df$type <- as.factor(df$type)
-                 df$accommodation <- as.factor(df$accommodation)
-                 df$travel <- as.factor(df$travel)
-                df
-         })
-         df2 <- reactive({
-                d1 <- daf()[,c("travel", "total_carbon_travel")]
-                names(d1) <- c("breakdown","c_carbon")
-                d2 <- daf()[,c("accommodation","total_carbon_accomo")]
-                names(d2) <- c("breakdown", "c_carbon")
-                d2$breakdown <- as.factor(d2$breakdown)
-                df2 <- rbind(d1,d2)
-                df2 <- aggregate(df2$c_carbon, by = list(df2$breakdown), FUN = sum)
-                names(df2) <- c("breakdown","c_carbon")
-                df2$frac <- round((df2$c_carbon / sum(df2$c_carbon))*100, 2)
-                #val <- df2$c_carbon
-                #names(val) <- paste0(df2$breakdown,"(",df2$frac,"%)")
-
-                
-                #df2$ymax <- cumsum(df2$frac)
-                #df2$ymin <- c(0,head(df2$ymax, n = -1))
-                df2
-         })
-         
-         
-### Making complicated doughnut plots
- ggplot(df2(), aes(ymax = ymax, ymin = ymin, xmax =4, xmin = 3, fill = breakdown))+
-                #        geom_rect() +
-                #        #geom_label( x = 3.5, aes( y = labelPosition, label = label),size = 6) +
-                #        scale_fill_brewer(palette = 4) +
-                #        geom_label(aes(label = frac)) +
-                #        coord_polar(theta = "y") + 
-                #        xlim(c(2,4)) +
-                #        theme_void()
-
-## Future direction
-- bootswatch theme [/]
-- embed in custom 
 
 ## References 
 
-1.  UK Government National Travel Survey 2021: Mode share, journey lengths and public transport use - GOV.UK. In: www.gov.uk. https://www.gov.uk/government/statistics/national-travel-survey-2021/national-travel-survey-2021-mode-share-journey-lengths-and-public-transport-use. Accessed 14 Jun 2023
 
-2. Network Manager (2023) EUROCONTROL Data Snapshot
-3. Paul A, Schmalz U (2017) DATASET2050 Deliverable 3.1 " Current Passenger Demand Profile "
+1. Average CO2 emissions from new cars and new vans increased again in 2019; European Environment Agency. https://www.eea.europa.eu/highlights/average-co2-emissions-from-new-cars-vans-2019. Accessed: 3 Aug 2023
+
+
+
+2. UK Government National Travel Survey 2021: Mode share, journey lengths and public transport use. https://www.gov.uk/government/statistics/national-travel-survey-2021/national-travel-survey-2021-mode-share-journey-lengths-and-public-transport-use. Accessed: 14 Jun 2023
+
+
+
+3. Network Manager (2023) EUROCONTROL Data Snapshot, https://www.eurocontrol.int/our-data;. Accessed: 10 July 2023
+
+
+
 4. Plötz P, Jakobsson N, Sprei F (2017) On the distribution of individual daily driving distances. Transportation Research Part B: Methodological 101:213–227. https://doi.org/10.1016/j.trb.2017.04.008
-5. Veloso M, Phithakkitnukoon S, Bento C, et al (2011) Exploratory Study of Urban Flow using Taxi Traces
 
-# current workign commit
-- 5ec5f9d
+
+
+5. Veloso M, Phithakkitnukoon S, Bento C, et al (2011) Exploratory Study of Urban Flow using Taxi Traces, Proceedings of the 2011 international workshop on Trajectory data mining and analysisACM, pp. 23
+
+
+
+6. UK Government,Greenhouse gas reporting: conversion factors 2022. (2022)In: GOV.UK. https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2022. Accessed 20 July 2023
+
+
+
+7. European Union Air transport statistics. Link . Accessed 4 Aug 2023.
+
 
 ## Session Info
 
+─ Session info ────────────────────────────────────────────────────────────────
+ setting  value
+ version  R version 4.2.1 (2022-06-23)
+ os       macOS Monterey 12.6.6
+ system   x86_64, darwin17.0
+ ui       RStudio
+ language (EN)
+ collate  en_US.UTF-8
+ ctype    en_US.UTF-8
+ tz       Europe/London
+ date     2023-08-06
+ rstudio  2023.06.0+421 Mountain Hydrangea (desktop)
+ pandoc   2.10.1 @ /usr/local/bin/pandoc
 
-R version 4.2.1 (2022-06-23)
+─ Packages ────────────────────────────────────────────────────────────────────
+ package      * version date (UTC) lib source
+ askpass        1.1     2019-01-13 [1] CRAN (R 4.2.0)
+ bslib        * 0.5.0   2023-06-09 [1] CRAN (R 4.2.0)
+ cachem         1.0.8   2023-05-01 [1] CRAN (R 4.2.0)
+ cli            3.6.1   2023-03-23 [1] CRAN (R 4.2.0)
+ colorspace     2.1-0   2023-01-23 [1] CRAN (R 4.2.0)
+ crayon         1.5.2   2022-09-29 [1] CRAN (R 4.2.0)
+ crosstalk      1.2.0   2021-11-04 [1] CRAN (R 4.2.0)
+ curl           5.0.1   2023-06-07 [1] CRAN (R 4.2.0)
+ data.table     1.14.8  2023-02-17 [1] CRAN (R 4.2.0)
+ digest         0.6.33  2023-07-07 [1] CRAN (R 4.2.0)
+ dplyr          1.1.2   2023-04-20 [1] CRAN (R 4.2.0)
+ ellipsis       0.3.2   2021-04-29 [1] CRAN (R 4.2.0)
+ fansi          1.0.4   2023-01-22 [1] CRAN (R 4.2.0)
+ fastmap        1.1.1   2023-02-24 [1] CRAN (R 4.2.0)
+ fs             1.6.3   2023-07-20 [1] CRAN (R 4.2.0)
+ generics       0.1.3   2022-07-05 [1] CRAN (R 4.2.0)
+ ggplot2      * 3.4.2   2023-04-03 [1] CRAN (R 4.2.0)
+ glue           1.6.2   2022-02-24 [1] CRAN (R 4.2.0)
+ gtable         0.3.3   2023-03-21 [1] CRAN (R 4.2.1)
+ htmltools      0.5.5   2023-03-23 [1] CRAN (R 4.2.0)
+ htmlwidgets    1.6.2   2023-03-17 [1] CRAN (R 4.2.0)
+ httpuv         1.6.11  2023-05-11 [1] CRAN (R 4.2.0)
+ httr           1.4.6   2023-05-08 [1] CRAN (R 4.2.0)
+ jquerylib      0.1.4   2021-04-26 [1] CRAN (R 4.2.0)
+ jsonlite       1.8.7   2023-06-29 [1] CRAN (R 4.2.0)
+ knitr          1.43    2023-05-25 [1] CRAN (R 4.2.0)
+ labeling       0.4.2   2020-10-20 [1] CRAN (R 4.2.0)
+ later          1.3.1   2023-05-02 [1] CRAN (R 4.2.0)
+ lazyeval       0.2.2   2019-03-15 [1] CRAN (R 4.2.0)
+ lifecycle      1.0.3   2022-10-07 [1] CRAN (R 4.2.0)
+ magrittr       2.0.3   2022-03-30 [1] CRAN (R 4.2.0)
+ memoise        2.0.1   2021-11-26 [1] CRAN (R 4.2.0)
+ mime           0.12    2021-09-28 [1] CRAN (R 4.2.0)
+ munsell        0.5.0   2018-06-12 [1] CRAN (R 4.2.0)
+ openssl        2.0.6   2023-03-09 [1] CRAN (R 4.2.0)
+ pillar         1.9.0   2023-03-22 [1] CRAN (R 4.2.1)
+ pkgconfig      2.0.3   2019-09-22 [1] CRAN (R 4.2.0)
+ plotly       * 4.10.2  2023-06-03 [1] CRAN (R 4.2.0)
+ promises       1.2.0.1 2021-02-11 [1] CRAN (R 4.2.0)
+ purrr          1.0.1   2023-01-10 [1] CRAN (R 4.2.0)
+ R6             2.5.1   2021-08-19 [1] CRAN (R 4.2.0)
+ RColorBrewer   1.1-3   2022-04-03 [1] CRAN (R 4.2.0)
+ Rcpp           1.0.11  2023-07-06 [1] CRAN (R 4.2.0)
+ reactlog       1.1.1   2022-09-26 [1] CRAN (R 4.2.0)
+ rlang          1.1.1   2023-04-28 [1] CRAN (R 4.2.0)
+ rsconnect      0.8.29  2023-01-09 [1] CRAN (R 4.2.0)
+ rstudioapi     0.14    2022-08-22 [1] CRAN (R 4.2.0)
+ sass           0.4.7   2023-07-15 [1] CRAN (R 4.2.0)
+ scales         1.2.1   2022-08-20 [1] CRAN (R 4.2.0)
+ sessioninfo    1.2.2   2021-12-06 [1] CRAN (R 4.2.0)
+ shiny        * 1.7.4   2022-12-15 [1] CRAN (R 4.2.0)
+ sourcetools    0.1.7-1 2023-02-01 [1] CRAN (R 4.2.0)
+ tibble         3.2.1   2023-03-20 [1] CRAN (R 4.2.0)
+ tidyr          1.3.0   2023-01-24 [1] CRAN (R 4.2.0)
+ tidyselect     1.2.0   2022-10-10 [1] CRAN (R 4.2.0)
+ utf8           1.2.3   2023-01-31 [1] CRAN (R 4.2.0)
+ vctrs          0.6.3   2023-06-14 [1] CRAN (R 4.2.0)
+ viridisLite    0.4.2   2023-05-02 [1] CRAN (R 4.2.0)
+ withr          2.5.0   2022-03-03 [1] CRAN (R 4.2.0)
+ xfun           0.39    2023-04-20 [1] CRAN (R 4.2.0)
+ xtable         1.8-4   2019-04-21 [1] CRAN (R 4.2.0)
+ yaml           2.3.7   2023-01-23 [1] CRAN (R 4.2.0)
 
-Platform: x86_64-apple-darwin17.0 (64-bit)
+ [1] /Library/Frameworks/R.framework/Versions/4.2/Resources/library
 
-Running under: macOS Monterey 12.6.6
-
-
-Matrix products: default
-LAPACK: /Library/Frameworks/R.framework/Versions/4.2/Resources/lib/libRlapack.dylib
-
-locale:
-[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
-
-attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
-
-other attached packages:
-[1] plotly_4.10.2 ggplot2_3.4.2 shiny_1.7.4  
-
-loaded via a namespace (and not attached):
-
- [1] Rcpp_1.0.10       jquerylib_0.1.4   bslib_0.4.2       pillar_1.9.0     
- [5] compiler_4.2.1    later_1.3.1       tools_4.2.1       digest_0.6.31    
- [9] memoise_2.0.1     viridisLite_0.4.2 jsonlite_1.8.5    lifecycle_1.0.3  
-[13] tibble_3.2.1      gtable_0.3.3      pkgconfig_2.0.3   rlang_1.1.1      
-[17] cli_3.6.1         rstudioapi_0.14   crosstalk_1.2.0   yaml_2.3.7       
-[21] fastmap_1.1.1     httr_1.4.6        withr_2.5.0       dplyr_1.1.2      
-[25] sass_0.4.6        generics_0.1.3    vctrs_0.6.2       htmlwidgets_1.6.2
-[29] grid_4.2.1        DT_0.28           tidyselect_1.2.0  data.table_1.14.8
-[33] glue_1.6.2        R6_2.5.1          fansi_1.0.4       tidyr_1.3.0      
-[37] purrr_1.0.1       magrittr_2.0.3    scales_1.2.1      promises_1.2.0.1 
-[41] htmltools_0.5.5   ellipsis_0.3.2    shinythemes_1.2.0 rsconnect_0.8.29 
-[45] mime_0.12         colorspace_2.1-0  xtable_1.8-4      httpuv_1.6.11    
-[49] utf8_1.2.3        lazyeval_0.2.2    munsell_0.5.0     cachem_1.0.8     
-[53] crayon_1.5.2  
+───────────────────────────────────────────────────────────────────────────────

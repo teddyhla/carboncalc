@@ -76,7 +76,7 @@ ui <- fluidPage(
                                             br(),
                                             tags$li(h5(textOutput("txt2ans"))),
                                             br(),
-                                            tags$li(h5("Driving a 4-seater car with average efficiency diesel fuel for 100km approximately consumes 39 kilograms of carbondioxide equivalent."))
+                                            tags$li(h5("Driving a 4-seater car with average efficiency diesel fuel in EU for 100km approximately consumes 12.7 kilograms of carbondioxide equivalent [1]."))
                                     ),
                                     fluidRow(
                                             verbatimTextOutput("test"),
@@ -95,9 +95,7 @@ ui <- fluidPage(
                      fluidRow(
                              column(12,
                                     h3("Assumptions"),
-                                    a1(),
-                                    h4("References"),
-                                    p("For our calculation, we have used", a("UK Government green house gas conversions", href= "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2022"))
+                                    a1()
                                     )
                      ) # may be a card
                      ),
@@ -114,14 +112,14 @@ ui <- fluidPage(
                                     h4("Source code"),
                                     p("Source code is available at",a('github repo link',href= "https://github.com/teddyhla/carboncalc/tree/master/carboncalc" )),
                                     h4("Cite this app as"),
-                                    p("Please use the following to cite in publications:"),
                                     cite1()
                                     )
                      ),
                      hr(),
                      fluidRow(
                              column(12,
-                                    
+                                    h4("References"),
+                                    ref1()
                                     )
                              
                      )

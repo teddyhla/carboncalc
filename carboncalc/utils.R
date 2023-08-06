@@ -1,3 +1,12 @@
+##### UTILS FILE ####
+##### 2 PARTS;1. CUSTOM FUNCTIONS AND 2. HTML TEXTS
+
+#####################################
+#
+# CUSTOM FUNCTIONS
+#
+####################################
+
 
 #custom function for generating reactive ui output based on 1,2,3 vars 
 #uvfunc creates a ui elements for two events, taking arguments id, text and total which is from 
@@ -70,6 +79,14 @@ theme_cc <- function(){
                 )
 }
 
+###################################
+#
+#  HTML TEXTS
+#
+###################################
+
+
+# HTML text for setting Modal
 motxt <- function(){
         p(
                 div(HTML(
@@ -86,14 +103,18 @@ motxt <- function(){
         )
 }
 
+# TEST - not used
 htx1 <- function(){
         p("We FUNC that all international attendees are not sharing rooms in a hotel and not staying locally with friends and family.")
 }
 
+# for gen citation
+
 cite1 <- function(){
-        p(div(HTML("Hla, T.T.W. (2023) <em>Event carbon cost calculator</em>. Available at: <a href=https://twhla.shinyapps.io/pocus_carbon_footprints_calculator/>source link</a> (Accessed: 06 August 2023).")))
+        p(div(HTML("Hla, Teddy Tun Win. (2023) <em>Event carbon cost calculator</em>. Available at: <a href=https://twhla.shinyapps.io/pocus_carbon_footprints_calculator/>source link</a>.")))
 }
 
+# For assumptions
 a1 <- function(){
         p(
                 div(HTML("
@@ -102,26 +123,37 @@ a1 <- function(){
                         <p><em><strong>2. Carbon cost of venue, equipment, waste processing</strong></em></p>
                         <p>Given the carbon costs of venue, equipment and waste processing are likely to be identical irregardless of local / international attendees, we have not calculated seperately.&nbsp;</p>
                         <p><em><strong>3. Type of transports</strong></em></p>
-                        <p>Based on European Union travel data, we assumed that all international travels are via 'flights' , travelling in 'economy class' as direct flights.</p>
-                        <p>Similarly, surface rail remains the most common mode of transport for average miles travelled per person per year. Therefore, we assumed that 'surface rail' will be used for all local travel.&nbsp;</p>
+                        <p>Based on European Union travel data, we assumed that all international travels are via 'flights' , travelling in 'economy class' as direct flights [2].</p>
+                        <p>Similarly, surface rail remains the most common mode of transport for average miles travelled per person per year [2,3]. Therefore, we assumed that 'surface rail' will be used for all local travel.&nbsp;</p>
                         <p><em><strong>4. Typical distances</strong></em></p>
-                        <p>Travel distances and durations generally follow a 'gamma' distribution. Based on typical flight and rail durations and distances in the European Union, we have modelled a local travel as a gamma distribution of distances with mean of 75km. Equally, for internaitonal travel, a gamma distribution of mean 1000km is used.</p>
+                        <p>Travel distances and durations generally follow a 'gamma' distribution [3,4,5]. Based on typical flight and rail durations and distances in the European Union, we have modelled a local travel as a gamma distribution of distances with mean of 75km (in comaparison, London to Cambridge ~ 79km). Equally, for internaitonal travel, a gamma distribution of mean 1000km (in comparison, London to Milan ~ 1200km) is used.</p>
                         <p><em><strong>5. Carbon cost breakdown</strong></em></p>
-                        <p>Carbon footprint is more accurately sub-divided into carbondioxide, methane, nitrousoxide levels. For ease of use, we have followed a standard reporting of carbondioxide equivalent, an index combining all three components.</p>
+                        <p>Carbon footprint is more accurately sub-divided into carbondioxide, methane, nitrousoxide levels [6]. For ease of use, we have followed a standard reporting of carbondioxide equivalent, an index combining all three components.</p>
                         <p><em><strong>6. Same event variables having a different total value</strong></em></p>
                         <p>Based on number of local / non-local attendees, a gamma distribution of travel distances with set mean is sampled. Therefore, the same event with same variables will have very similar but slightly different results. e.g., 50.6 vs. 49.7.</p>
                         "))
         )
 }
-# 
-# h4("Carbon cost of venue & equipment"),
-# p("We have not calculated the carbon cost of catering, equipments transport, waste and venue set up. This is because these costs are likely to be similar for local / non-local events."),
-# h4("Type of transports"),
-# p("Based on EU travel data, we assumed that all international travels are via flights, travelling in 'economy class' as direct flights."),
-# p("Based on UK National Travel Survey[1], surface rail remains the most common mode of transport for average miles travelled per person per year. Therefore, we assumed that 'surface rail' will be used for local travel. Based on average travel durations in the UK and European Union, for local travel we have assumed a 75km travel distance and for international air travel we have assumed a 1000 km distance."),
-# h4("Breakdown of carbon cost"),
-# p("Carbon foot print is more accurately subdivided into carbon dioxide, methane, and nitrous oxide levels. For parsimony, we have reported a total equivalent carbon dioxide as a single value."),
-# h4("Typical journey"),
-# p("We assumed that all travel distance to venue comprises of a return journey and follows a gamma distribution [2].For 'typical' local courses, we have modelled using a mean distance of 75km (approximately 1 hour 15 mins surface rail journey time) as a maximum upperlimit of acceptable commute."),
-# p("Based on Eurocontrol, an average flight distance travelled in European Union is 981km and as a result, we have used as a 1000 km as default for international flight [3]. "),
 
+# For references
+ref1 <- function(){
+        p(
+                div(HTML(
+                        "<p>1. Average CO2 emissions from new cars and new vans increased again in 2019; European Environment Agency. <a href=https://www.eea.europa.eu/highlights/average-co2-emissions-from-new-cars-vans-2019>https://www.eea.europa.eu/highlights/average-co2-emissions-from-new-cars-vans-2019</a>. Accessed: 3 Aug 2023</p>
+                        <br>
+                        <p>2. UK Government National Travel Survey 2021: Mode share, journey lengths and public transport use. <a href=https://www.gov.uk/government/statistics/national-travel-survey-2021/national-travel-survey-2021-mode-share-journey-lengths-and-public-transport-use> https://www.gov.uk/government/statistics/national-travel-survey-2021/national-travel-survey-2021-mode-share-journey-lengths-and-public-transport-use</a>. Accessed: 14 Jun 2023</p>
+                        <br>
+                        <p>3. Network Manager (2023) EUROCONTROL Data Snapshot, <a href=https://www.eurocontrol.int/our-data>https://www.eurocontrol.int/our-data</a>;. Accessed: 10 July 2023</p>
+                        <br>
+                        <p>4. Pl&ouml;tz P, Jakobsson N, Sprei F (2017) On the distribution of individual daily driving distances. Transportation Research Part B: Methodological 101:213&ndash;227. <a href=https://doi.org/10.1016/j.trb.2017.04.008>https://doi.org/10.1016/j.trb.2017.04.008 </a></p>
+                        <br>
+                        <p>5. Veloso M, Phithakkitnukoon S, Bento C, et al (2011) Exploratory Study of Urban Flow using Taxi Traces,&nbsp;<em>Proceedings of the 2011 international workshop on Trajectory data mining and analysisACM</em><span>, pp. 23</span></p>
+                        <br>
+                        <p><span>6. UK Government,</span>Greenhouse gas reporting: conversion factors 2022. (2022)In: GOV.UK. <a href=https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2022>https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2022</a>. Accessed 20 July 2023</p>
+                        <br>
+                        <p>7. European Union Air transport statistics. <a href=https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Air_transport_statistics> Link </a>. Accessed 4 Aug 2023. </p>
+                        "
+                        
+                ))
+        )
+}
