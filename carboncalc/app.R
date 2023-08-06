@@ -1,27 +1,24 @@
-# Carbon cost of POCUS courses
-# This is a Shiny web application.
+# Carbon cost of Events - aShiny web application.
 #
 # Conceived by A Wong, M Zawadka and T Hla
 # see github repo for details 
 
 # DEPENDENCIES 
 library(shiny)
+library(ggplot2)
 library(plotly)
-library(bslib)
-reactlog::reactlog_enable()
+#reactlog::reactlog_enable()
+source("utils.R")
 
-# Define UI for application that draws a histogram
-ui <- fluidPage(theme = bslib::bs_theme(bootswatch = "sandstone"),
+# UI
+ui <- fluidPage(
+        # theme = bslib::bs_theme(),
 
-    # Application title
-    titlePanel("Local vs. International POCUS courses: an interactive simulated Carbon Cost Calculator"),
-    
-    #horizontal panel
-    p("Explore the carbon cost of POCU courses by manipulating the seven different variables below. Please see 'User Guide & Assumptions' for details."),
-    p("Conceived and developed by",a("Dr Adrian Wong", href= "https://twitter.com/avkwong?lang=en" ), a("Dr Mateusz Zawadka", href= "https://twitter.com/m_zawadka?lang=en"), "and", a("Dr Teddy Tun Win Hla",href= "https://twitter.com/teddyhla?lang=en-GB")
-            
+    # App title
+    titlePanel("Event carbon cost calculator"),
+    p("Explore the carbon cost of events by manipulating variables below."),
+    p("Conceived and developed by",a("Dr Adrian Wong,", href= "https://twitter.com/avkwong?lang=en" ), a("Dr Mateusz Zawadka", href= "https://twitter.com/m_zawadka?lang=en"), "and", a("Dr Teddy Tun Win Hla",href= "https://twitter.com/teddyhla?lang=en-GB")
     ),
-    
     
     #main side bar panel
     br(),
@@ -29,233 +26,201 @@ ui <- fluidPage(theme = bslib::bs_theme(bootswatch = "sandstone"),
             tabPanel("Simulations",
                      br(),
                     sidebarLayout(
-                            sidebarPanel("Please select variables individually", width=2,
-                                         br(),
-                                         br(),
-                                         radioButtons("defset","Default Settings:", choices= c(
-                                                 "Local" = "loc",
-                                                 "International" = "intl"
-                                         )),
+                            sidebarPanel( width=3,
+                                         h4("Select global variables:"),
                                          br(),
                                          numericInput("attnd",
-                                                     "Variable 1: Number of attendees:",
+                                                     "Total number of attendees:",
                                                      min = 1,
-                                                     max = 200,
+                                                     max = 1000,
                                                      step = 1,
                                                      value = 30),
                                          numericInput("fac",
-                                                     "Variable 2: Number of faculty:",
+                                                     "Total number of faculty:",
                                                      min = 1,
-                                                     max = 20,
+                                                     max = 1000,
                                                      value = 5),
+                                        numericInput("duration",
+                                                     "Duration of event in days:",
+                                                     min = 1,
+                                                     max = 7,
+                                                     step = 1,
+                                                     value = 2),
+                                        hr(),
+                                        h5("Select variables for Model 1:"),
                                          uiOutput("uiv3"),
                                          uiOutput("uiv4"),
                                          uiOutput("uiv5"),
-                                         numericInput("mu_loc","Variable 6: Mean distance for local in km",
-                                                      value = 100, min = 5, max = 250,step = 5),
-                                         numericInput("mu_int","Variable 7: Mean distance for international in km",
-                                                      value = 1000, min = 500, max = 2500,step = 100)
+                                        hr(),
+                                        h5("Select variables for Model 2:"),
+                                         uiOutput("uiv6"),
+                                         uiOutput("uiv7"),
+                                         uiOutput("uiv8")
                                          
                             ),
                             
-                            # Show a plot of the generated distribution
+                            # Show output plots 
                             mainPanel(
-                                    plotlyOutput("carboncostPlot"),
-                                    verbatimTextOutput("test2"),
-                                    DT::dataTableOutput('redf'),
+                                    fluidRow(
+                                        column(6,
+                                                plotlyOutput("carboncostPlot")
+                                        ),
+                                        column(6,
+                                                plotlyOutput("tmap")
+                                        )
+                                    ),
+                                    br(),
+                                    hr(),
+                                    tags$ul(
+                                            tags$li(h5(textOutput("txt1ans"))),
+                                            br(),
+                                            tags$li(h5(textOutput("txt2ans"))),
+                                            br(),
+                                            tags$li(h5("Driving a 4-seater car with average efficiency diesel fuel in EU for 100km approximately consumes 12.7 kilograms of carbondioxide equivalent [1]."))
+                                    ),
+                                    fluidRow(
+                                            verbatimTextOutput("test"),
+                                            
+                                    )
                             )
                     )
             ),
             tabPanel("User Guide & Assumptions",
                      fluidRow(
                              column(12,
-                                    h3("User Guide"),
-                                    p("Default settings are set at 30 attendees with 5 faculty members travelling over a mean distance of 50km for local course and 500 km for international course"),
-                                    p("Manipulating the variables will reset the graph and new graph drawn and displayed in real time.")
-                                    )
+                                    h3("Instructions"),
+                                    motxt())
                      ),# may be a card
                      hr(),
                      fluidRow(
                              column(12,
                                     h3("Assumptions"),
-                                    h4("Duration of course"),
-                                    p("We assumed that POCUS courses are run over two days. Thus, if not staying at home, attendees and faculty will require 2-night hotel stay."),
-                                    p("We assumed that all international attendees are not sharing rooms in a hotel and not staying locally with friends and family."),
-                                    h4("Carbon cost of venue and POCUS equipment"),
-                                    p("We have deliberately not calculated the carbon cost of moving equipments and venue set up. This is because a POCUS course is likely to require venue and equipment irregardless of locality."),
-                                    h4("Type of transports"),
-                                    p("We assumed that all international travels are via flights, travelling in 'economy class'. We assumed that all local travels are via 'surface rail' without added car/ taxi journeys."),
-                                    p("Based on UK National Travel Survey[1], surface rail remains the most common mode of transport for average miles travelled per person per year. As a result, for local travel, we assumed that 'surface rail' will be used as most common mode of travel."),
-                                    h4("Breakdown of carbon cost"),
-                                    p("Carbon foot print is more accurately subdivided into carbon dioxide, methane, and nitrous oxide levels. For parsimony, we have reported a total equivalent carbon dioxide as a single value."),
-                                    h4("Typical journey"),
-                                    p("We assumed that all travel distance to venue comprises of a return journey and follows a gamma distribution [2].For 'typical' local courses, we have modelled using a mean distance of 100km (approximately 1 hour 15 mins surface rail journey time) as a maximum upperlimit of acceptable commute."),
-                                    p("Based on Eurocontrol, an average flight distance travelled in European Union is 981km and as a result, we have used as a 1000 km as default for international flight [3]. "),
-                                    h4("Reference"),
-                                    p("For our calculation, we have used", a("UK Government green house gas conversions", href= "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2022"))
+                                    a1()
                                     )
                      ) # may be a card
                      ),
             tabPanel("About",
+                     br(),
                      fluidRow(
                              column(12,
                                     h4("Version"),
-                                    p("0.1"),
+                                    p("1.0"),
                                     h4("License"),
                                     p("GPL-3"),
                                     h4("Authors"),
-                                    p("If there are any queries or bugs or feedback in using this app, please contact", a("Dr Teddy Tun Win Hla",href= "https://twitter.com/teddyhla?lang=en-GB")),
-                                    p("If you would like to embed this app in your website, you may use the following code but we would be grateful if you could notify us."),
+                                    p(" To direct message the app developer, please contact", a("Dr Teddy Tun Win Hla",href= "https://twitter.com/teddyhla?lang=en-GB")),
                                     h4("Source code"),
                                     p("Source code is available at",a('github repo link',href= "https://github.com/teddyhla/carboncalc/tree/master/carboncalc" )),
                                     h4("Cite this app as"),
-                                    p("Please use the following to cite in publications:"),
-                                    
+                                    cite1()
                                     )
                      ),
                      hr(),
                      fluidRow(
+                             column(12,
+                                    h4("References"),
+                                    ref1()
+                                    )
                              
                      )
                     
             )
     )
 
-    # Sidebar with a slider input for number of bins 
+    
     
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+        #bslib::bs_themer()
+        #histdata variable is a hack to allow modal display on load.
+        histdata <- rnorm(1)
+        #modal display output
+        observeEvent(once = TRUE, ignoreNULL = FALSE, ignoreInit = FALSE, eventExpr = histdata, {
+                showModal(modalDialog(
+                        title = "User Instructions",
+                        motxt()
+                ))
+        })
+        # dynamic UI display using functions
+        output$uiv3 <- uvfunc(id = "p1_attnd",text = "Number of international attendees", total = input$attnd)
+        output$uiv4 <- uvfunc(
+                id = "f1_attnd", text = "Number of international faculty", total = input$fac
+        )
+        output$uiv5 <- uvfunc(
+                id = "e1_accom",text = "Number staying in hotels", total = (input$attnd + input$fac + 15)
+        )
+        
+        output$uiv6 <- uvfunc(id = "p2_attnd",text = "Number of international attendees", total = input$attnd)
+        output$uiv7 <- uvfunc(
+                id = "f2_attnd", text = "Number of international faculty", total = input$fac
+        )
+        output$uiv8 <- uvfunc(
+                id = "e2_accom",text = "Number staying in hotels", total = (input$attnd + input$fac + 15)
+        )
+       
         # here we will create reactive variables
         # key logics - for see readme.md
+        # make a reactive dataframe for event1 
+        edf1 <- reactive({
+                gen(a= input$attnd,b=input$fac,c=input$p1_attnd,d =input$f1_attnd,e = input$duration,f= input$e1_accom,g = "Model 1")
+        })
+        #make a reactive dataframe for event2
+        edf2 <- reactive({
+                gen(a= input$attnd, b= input$fac, c=input$p2_attnd, d=input$f2_attnd, e= input$duration,f=input$e2_accom, g="Model 2")
+        })
         
-                attn <- reactive(input$attnd)
-                fac <- reactive(input$fac)
-                attn_intl <- reactive(input$p_attnd)
-                attn_home <- reactive(
-                        attn() - attn_intl()
-                )
-                fac_intl <- reactive(input$fac_attnd)
-                fac_home <- reactive(
-                        fac() - fac_intl()
-                )
-                perc_hotel <- reactive(input$accom)
-                perc_home <- reactive(
-                        (attn() + fac()) - perc_hotel()
-                )
-                distloc <- reactive(
-                        rnorm(n= (attn_home() + fac_home()) , mean= input$mu_loc , sd = 1)
-                )
-                distintl <- reactive(
-                        rnorm(n= (input$p_attnd + input$fac_attnd), mean= input$mu_int , sd = 10 )
-                )
-        # here we will create a reactive dataframe.
-         df <- reactive({
-                 #first an id is assigned based on number of attendees and faculty
-                 # then they are classed as faculty or attendees
-                 # then their mode of travel is assigned
-                df <- data.frame(
-                        id = (1:(attn() + fac())),
-                        type = c(rep("attn",attn()), rep("fac",fac())),
-                        travel = c(
-                                rep("intl", attn_intl()),
-                                rep("local", attn_home()),
-                                rep("intl", fac_intl()),
-                                rep("local", fac_home())
-                        ),
-                        accommodation = c(
-                                rep("hotel",perc_hotel()),
-                                rep("home",perc_home())
-                        )
-                        #if else doesnt work because it is not assigned yet!
-                )
-                #then their state of accommodation is assigned.
-                df$carbon_accomo <- ifelse(df$accommodation == "hotel",20.8,0)
-                #then dataframe is sorted based on mode of travel
-                df<-df[order(df$travel),]
-                # then we assigned distances computed
-                df$dist <- ifelse(df$travel == "local",distloc(),distintl())
-                # see read me for rationale of this
-                df$carbon_travel <- ifelse(df$travel == "local",0.03549,0.14062)
-                df$total_carbon <- (df$carbon_travel * 2 * df$dist) + df$carbon_accomo
-                #dont forget to return a reactive dataframe back
-                #change to factors for
-                df$type <- as.factor(df$type)
-                df$accommodation <- as.factor(df$accommodation)
-                df$travel <- as.factor(df$travel)
+        daf <- reactive({
+                df <- rbind(edf1(),edf2())
+                df$breakdown <- as.factor(df$breakdown)
+                df$model <- as.factor(df$model)
                 df
          })
-       
-         
-        # reactive slider selection based on default setting of local vs. international
-        output$uiv3 <- renderUI({
-                if (is.null(input$defset)) 
-                       return()
-                switch(input$defset,
-                       "loc" = sliderInput("p_attnd",
-                                           "Variable 3: Number of international attendees",
-                                           min = 0,
-                                           max = input$attnd,
-                                           step = 1,
-                                           value = 0),
-                       "intl" = sliderInput("p_attnd",
-                                            "Variable 3: Number of international attendees",
-                                            min = 0,
-                                            max = input$attnd,
-                                            step = 1,
-                                            value = input$attnd)
-                               )
+        
+        df_filtered <- reactive({
+                daf()[grepl("travel", daf()$breakdown), ]
         })
-        output$uiv4 <- renderUI({
-                if (is.null(input$defset)) 
-                        return()
-                switch(input$defset,
-                       "loc" = sliderInput("fac_attnd",
-                                           "Variable 4: Number of international faculty",
-                                           min = 0,
-                                           max = input$fac,
-                                           step = 1,
-                                           value = 0),
-                       "intl" = sliderInput("fac_attnd",
-                                            "Variable 4: Number of international faculty",
-                                            min = 0,
-                                            max = input$fac,
-                                            step = 1,
-                                            value = input$fac)
-                        
-                )
-        })
-        output$uiv5 <- renderUI({
-                if (is.null(input$defset)) 
-                        return()
-                switch(input$defset,
-                       "loc" = sliderInput("accom",
-                                           "Variable 5: Number staying in hotels",
-                                           min = (attn_intl()+fac_intl()),
-                                           max = (input$fac + input$attnd),
-                                           step = 1,
-                                           value = (attn_intl()+fac_intl())),
-                       "intl" = sliderInput("accom",
-                                            "Variable 5: Number staying in hotels",
-                                            min = (attn_intl()+fac_intl()),
-                                            max = (input$fac + input$attnd),
-                                            step = 1,
-                                            value = (input$fac + input$attnd)),
-                        
-                )
-        })
-        output$redf <- DT::renderDataTable({
-                df()
-                }) 
-        output$test2 <- renderPrint({
-                summary(df())
-        })
+        
+        #output plot1
         output$carboncostPlot <- renderPlotly({
-                plot_ly(df(), x = ~travel, y= ~total_carbon  )
+                
+                plot1 <-ggplot(df_filtered(), aes(x = breakdown, y= carbon_values, fill = model))+
+                              geom_col(position = "dodge") +
+                              scale_fill_brewer(palette = "Set1")+
+                              labs(
+                                      title = "Carbon cost of travel",
+                                      x = "Type of travel",
+                                      y = "Carbondioxide equivalent in kg "
+                              )+
+                              theme_cc()
+                plotly::ggplotly(plot1,tooltip = c("y","text","fill"))
         })
+        #output plot2 
+        output$tmap <- renderPlotly({
+                ab = daf()
+                plot2 <-ggplot(ab, aes(x = reorder(breakdown,-perc),y= perc, fill = model)) +
+                            geom_col(position = "dodge") + 
+                            scale_fill_brewer(palette = "Set1")+
+                            coord_flip() +
+                            labs(
+                                    title = "Contribution of activities",
+                                    x = "Activity",
+                                    y = "Percentage of total carbon cost"
+                            ) +
+                            theme_cc()
+                plotly::ggplotly(plot2,tooltip = c("y","text","fill"))
+                
+        })
+        # output texts
+        output$txt1ans <- renderText(txrd(a = "Model 1", df = edf1))
+        output$txt2ans <- renderText(txrd(a="Model 2",df = edf2))
+        
+        #output for checking logic and testing. to be removed in launch.
+        output$test <- renderPrint(
+                daf()
+        )
 
-    
 }
 
 # Run the application 
