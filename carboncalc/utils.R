@@ -51,8 +51,8 @@ gen <- function(a, b, c, d, e, f, g){
 }
 
 # custom function that help generate a text 
-txrd <- function(a, df){
-        sprintf("Total carbon cost for %s is %s kilograms of carbondioxide equivalent",a, round(sum(df()$carbon_values),2))
+txrd <- function(df){
+        sprintf("%s",round(sum(df()$carbon_values),2))
 }
 
 #lets define a custom ggplot theme
@@ -75,7 +75,8 @@ theme_cc <- function(){
                         ),
                         axis.text.x = element_text(family = font,size = 12,vjust = 2),
                         axis.text.y = element_text(family = font, size=12),
-                        legend.text = element_text(family = font, size =11 )
+                        legend.text = element_text(family = font, size =11),
+                        legend.title = element_blank()
                 )
 }
 
@@ -92,8 +93,6 @@ motxt <- function(){
                 div(HTML(
                         "<ul>
                                 <li>First, please set total attendees, total faculty, and event duration as global variables.</li>
-                                <br>
-                                <br>
                                 <li>Then, change the variables in Model A &amp; B to compare possible carbon cost scenario for your event.</li>
                                 <br>
                                 <br>
@@ -106,6 +105,33 @@ motxt <- function(){
         )
 }
 
+mot2 <- function(){
+        p(
+                div(HTML(
+                        "<ul>
+                                <li>Please set global variables of 'total attendees', 'total faculty', and 'event duration'.</li>
+                                <li>Then, set 'the number of hotel rooms' and 'number of international attendees/faculty' in Model A &amp; B to allow comparison of carbon costs.</li>
+                                <li>The default option is set at 30 attendees, 5 faculty for 2 day course globally with model A where all participants are international versus only 2 in model B.</li>
+                                <li>As you change variables, graphs will update automatically.</li>
+                        </ul>"
+                )
+                
+                )
+        )
+}
+
+ver1 <- function(){
+        p(
+                div(HTML("
+                        <p>Version 1.0 & License GPL-3</p>
+                        <p> Development team: <a href=https://twitter.com/avkwong?lang=en> Dr Adrian Wong, <a href=https://twitter.com/m_zawadka?lang=en> Dr Mateus Zawadka, <a href=https://twitter.com/teddyhla?lang=en=GB> Dr Teddy Hla </p>
+                        <p> Any issues, please contact <a href= https://twitter.com/teddyhla?lang=en-GB> Teddy Hla </p>
+                        <p> Source code is available at github repository link <a href= https://github.com/teddyhla/carboncalc> Github repository. </p>
+                        <p> Cite this app as: Hla, Teddy Tun Win. (2023) <em>Event carbon cost calculator</em>. Available at: <a href=https://twhla.shinyapps.io/pocus_carbon_footprints_calculator/> link </p>
+                        ")    
+                )
+        )
+}
 # TEST - not used
 htx1 <- function(){
         p("We FUNC that all international attendees are not sharing rooms in a hotel and not staying locally with friends and family.")

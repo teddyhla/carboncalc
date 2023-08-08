@@ -7,130 +7,123 @@
 library(shiny)
 library(ggplot2)
 library(plotly)
-#reactlog::reactlog_enable()
+library(bslib)
 source("utils.R")
 
-# UI
-ui <- fluidPage(
-        # theme = bslib::bs_theme(),
+# UI elements
 
-    # App title
-    titlePanel("Event carbon cost calculator"),
-    p("Explore the carbon cost of events by manipulating variables below."),
-    p("Conceived and developed by",a("Dr Adrian Wong,", href= "https://twitter.com/avkwong?lang=en" ), a("Dr Mateusz Zawadka", href= "https://twitter.com/m_zawadka?lang=en"), "and", a("Dr Teddy Tun Win Hla",href= "https://twitter.com/teddyhla?lang=en-GB")
-    ),
-    
-    #main side bar panel
-    br(),
-    tabsetPanel(
-            tabPanel("Simulations",
-                     br(),
-                    sidebarLayout(
-                            sidebarPanel( width=3,
-                                         h4("Select global variables:"),
-                                         br(),
-                                         numericInput("attnd",
-                                                     "Total number of attendees:",
-                                                     min = 1,
-                                                     max = 1000,
-                                                     step = 1,
-                                                     value = 30),
-                                         numericInput("fac",
-                                                     "Total number of faculty:",
-                                                     min = 1,
-                                                     max = 1000,
-                                                     value = 5),
-                                        numericInput("duration",
-                                                     "Duration of event in days:",
-                                                     min = 1,
-                                                     max = 7,
-                                                     step = 1,
-                                                     value = 2),
-                                        hr(),
-                                        h5("Select variables for Model A:"),
-                                         uiOutput("uiv3"),
-                                         uiOutput("uiv4"),
-                                         uiOutput("uiv5"),
-                                        hr(),
-                                        h5("Select variables for Model B:"),
-                                         uiOutput("uiv6"),
-                                         uiOutput("uiv7"),
-                                         uiOutput("uiv8")
-                                         
-                            ),
-                            
-                            # Show output plots 
-                            mainPanel(
-                                    fluidRow(
-                                        column(6,
-                                                plotlyOutput("carboncostPlot")
-                                        ),
-                                        column(6,
-                                                plotlyOutput("tmap")
-                                        )
-                                    ),
-                                    br(),
-                                    hr(),
-                                    tags$ul(
-                                            tags$li(h5(textOutput("txt1ans"))),
-                                            br(),
-                                            tags$li(h5(textOutput("txt2ans"))),
-                                            br(),
-                                            tags$li(h5("Driving a 4-seater car with average efficiency diesel fuel in EU for 100km approximately consumes 12.7 kilograms of carbondioxide equivalent [1]."))
-                                    ),
-                                    fluidRow(
-                                            verbatimTextOutput("test"),
-                                            
-                                    )
-                            )
-                    )
-            ),
-            tabPanel("User Guide & Assumptions",
-                     fluidRow(
-                             column(12,
-                                    h3("Instructions"),
-                                    motxt())
-                     ),# may be a card
-                     hr(),
-                     fluidRow(
-                             column(12,
-                                    h3("Assumptions"),
-                                    a1()
-                                    )
-                     ) # may be a card
-                     ),
-            tabPanel("About",
-                     br(),
-                     fluidRow(
-                             column(12,
-                                    h4("Version"),
-                                    p("1.0"),
-                                    h4("License"),
-                                    p("GPL-3"),
-                                    h4("Authors"),
-                                    p(" To direct message the app developer, please contact", a("Dr Teddy Tun Win Hla",href= "https://twitter.com/teddyhla?lang=en-GB")),
-                                    h4("Source code"),
-                                    p("Source code is available at",a('github repo link',href= "https://github.com/teddyhla/carboncalc/tree/master/carboncalc" )),
-                                    h4("Cite this app as"),
-                                    cite1()
-                                    )
-                     ),
-                     hr(),
-                     fluidRow(
-                             column(12,
-                                    h4("References"),
-                                    ref1()
-                                    )
-                             
-                     )
-                    
-            )
-    )
-
-    
-    
+costcard <- card(
+        full_screen = TRUE,
+        card_header(
+                class = "bg-dark",
+                h5("Carbon cost of travel")
+        ),
+        card_body(
+                plotlyOutput("carboncostPlot")
+        )
 )
 
+tmap <- card(
+        full_screen = TRUE,
+        card_header(
+                class = "bg-dark",
+                h5("Contribution of activities")
+        ),
+        card_body(
+                plotlyOutput("tmap")
+        )
+)
+
+sidebar_acc <- accordion(
+        open = c("Select global variables:","Variables for Model A:","Variables for Model B:"),
+        accordion_panel(
+                "Select global variables:",icon = icon("globe"),
+                numericInput("attnd",
+                             "Total number of attendees:",
+                             min = 1,
+                             max = 1000,
+                             step = 1,
+                             value = 30),
+                numericInput("fac",
+                             "Total number of faculty:",
+                             min = 1,
+                             max = 1000,
+                             value = 5),
+                numericInput("duration",
+                             "Duration of event in days:",
+                             min = 1,
+                             max = 7,
+                             step = 1,
+                             value = 2)
+        ),
+        accordion_panel(
+                "Variables for Model A:",icon = icon("a"),
+                uiOutput("uiv3"),
+                uiOutput("uiv4"),
+                uiOutput("uiv5")
+        ),
+        accordion_panel(
+                "Variables for Model B:",icon = icon("b"),
+                uiOutput("uiv6"),
+                uiOutput("uiv7"),
+                uiOutput("uiv8")
+        )
+)
+
+# UI
+ui <- page_navbar(
+        fillable_mobile = FALSE,
+        title = "Events carbon cost calculator",
+        sidebar = sidebar(sidebar_acc),
+        nav_panel(title = "Simulations",
+                br(),
+                layout_columns(costcard,tmap),
+                layout_columns(
+                        value_box(class = "bg-warning",showcase = icon("a"),title = "Model A Total Carbon Cost",
+                                value = textOutput("txt1ans"),
+                                p("kilograms of carbondioxide equivalent.")
+                        ),
+                        value_box(class = "bg-primary",showcase = icon("b"),title = "Model B Total Carbon Cost",
+                                value = textOutput("txt2ans"),
+                                p("kilograms of carbondioxide equivalent.")
+                        ),
+                        value_box(class = "bg-info",showcase = icon("car-side"),title = "Driving a 4-seater, deisel car for 100km",
+                                value = "12.7",
+                                div(HTML("<p>kilograms of carbondioxide equivalent (<em>assuming average efficiency) <sup>[1]</sup></em></p>"))
+                        )
+                        )
+                ),
+        nav_panel(title = "User Guide & Assumptions",
+                                  page_fillable(
+                                          br(),
+                                        card(height = "800px",
+                                                card_header(h6("User Guide")),
+                                                card_body(mot2())
+                                        ),
+                                        card(
+                                                card_header(h6("Assumptions")),
+                                                card_body(a1())
+                                        )
+                                )
+                                
+                ),
+        nav_panel(title = "About",
+                        page_fillable(
+                                card(height = "800px",
+                                     card_header(h6("Development Team")),
+                                     card_body(ver1())
+                                     
+                                ),
+                                card(
+                                        card_header(h6("References")),
+                                        card_body(ref1())
+                                )
+                                        
+                        )
+                                
+                )
+)
+ 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
         #bslib::bs_themer()
@@ -187,11 +180,11 @@ server <- function(input, output) {
                 
                 plot1 <-ggplot(df_filtered(), aes(x = breakdown, y= carbon_values, fill = model))+
                               geom_col(position = "dodge") +
-                              scale_fill_brewer(palette = "Set1")+
+                              scale_fill_manual(values = c("#FFBF27","#0081FC"))+
                               labs(
-                                      title = "Carbon cost of travel",
                                       x = "Type of travel",
-                                      y = "Carbondioxide equivalent in kg "
+                                      y = "Carbondioxide equivalent in kg",
+                                      fill = NULL
                               )+
                               theme_cc()
                 plotly::ggplotly(plot1,tooltip = c("y","text","fill"))
@@ -201,20 +194,21 @@ server <- function(input, output) {
                 ab = daf()
                 plot2 <-ggplot(ab, aes(x = reorder(breakdown,-perc),y= perc, fill = model)) +
                             geom_col(position = "dodge") + 
-                            scale_fill_brewer(palette = "Set1")+
+                            scale_fill_manual(values = c("#FFBF27","#0081FC"))+
                             coord_flip() +
                             labs(
-                                    title = "Contribution of activities",
                                     x = "Activity",
-                                    y = "Percentage of total carbon cost"
+                                    y = "Percentage of total carbon cost",
+                                    fill = NULL
+                                    
                             ) +
                             theme_cc()
                 plotly::ggplotly(plot2,tooltip = c("y","text","fill"))
                 
         })
         # output texts
-        output$txt1ans <- renderText(txrd(a = "Model A", df = edf1))
-        output$txt2ans <- renderText(txrd(a="Model B",df = edf2))
+        output$txt1ans <- renderText(txrd(df = edf1))
+        output$txt2ans <- renderText(txrd(df = edf2))
         
         #output for checking logic and testing. to be removed in launch.
         output$test <- renderPrint(
