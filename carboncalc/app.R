@@ -47,12 +47,12 @@ ui <- fluidPage(
                                                      step = 1,
                                                      value = 2),
                                         hr(),
-                                        h5("Select variables for Model 1:"),
+                                        h5("Select variables for Model A:"),
                                          uiOutput("uiv3"),
                                          uiOutput("uiv4"),
                                          uiOutput("uiv5"),
                                         hr(),
-                                        h5("Select variables for Model 2:"),
+                                        h5("Select variables for Model B:"),
                                          uiOutput("uiv6"),
                                          uiOutput("uiv7"),
                                          uiOutput("uiv8")
@@ -144,17 +144,17 @@ server <- function(input, output) {
                 ))
         })
         # dynamic UI display using functions
-        output$uiv3 <- uvfunc(id = "p1_attnd",text = "Number of international attendees", total = input$attnd)
+        output$uiv3 <- uvfunc(id = "p1_attnd",text = "Number of international attendees", total = input$attnd, val = input$attnd)
         output$uiv4 <- uvfunc(
-                id = "f1_attnd", text = "Number of international faculty", total = input$fac
+                id = "f1_attnd", text = "Number of international faculty", total = input$fac, val = input$fac
         )
         output$uiv5 <- uvfunc(
-                id = "e1_accom",text = "Number staying in hotels", total = (input$attnd + input$fac + 15)
+                id = "e1_accom",text = "Number staying in hotels", total = (input$attnd + input$fac + 15), val = (input$attnd + input$fac)
         )
         
-        output$uiv6 <- uvfunc(id = "p2_attnd",text = "Number of international attendees", total = input$attnd)
+        output$uiv6 <- uvfunc(id = "p2_attnd",text = "Number of international attendees", total = input$attnd,)
         output$uiv7 <- uvfunc(
-                id = "f2_attnd", text = "Number of international faculty", total = input$fac
+                id = "f2_attnd", text = "Number of international faculty", total = input$fac, 
         )
         output$uiv8 <- uvfunc(
                 id = "e2_accom",text = "Number staying in hotels", total = (input$attnd + input$fac + 15)
@@ -164,11 +164,11 @@ server <- function(input, output) {
         # key logics - for see readme.md
         # make a reactive dataframe for event1 
         edf1 <- reactive({
-                gen(a= input$attnd,b=input$fac,c=input$p1_attnd,d =input$f1_attnd,e = input$duration,f= input$e1_accom,g = "Model 1")
+                gen(a= input$attnd,b=input$fac,c=input$p1_attnd,d =input$f1_attnd,e = input$duration,f= input$e1_accom,g = "Model A")
         })
         #make a reactive dataframe for event2
         edf2 <- reactive({
-                gen(a= input$attnd, b= input$fac, c=input$p2_attnd, d=input$f2_attnd, e= input$duration,f=input$e2_accom, g="Model 2")
+                gen(a= input$attnd, b= input$fac, c=input$p2_attnd, d=input$f2_attnd, e= input$duration,f=input$e2_accom, g="Model B")
         })
         
         daf <- reactive({
@@ -213,8 +213,8 @@ server <- function(input, output) {
                 
         })
         # output texts
-        output$txt1ans <- renderText(txrd(a = "Model 1", df = edf1))
-        output$txt2ans <- renderText(txrd(a="Model 2",df = edf2))
+        output$txt1ans <- renderText(txrd(a = "Model A", df = edf1))
+        output$txt2ans <- renderText(txrd(a="Model B",df = edf2))
         
         #output for checking logic and testing. to be removed in launch.
         output$test <- renderPrint(

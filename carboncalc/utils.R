@@ -11,9 +11,9 @@
 #custom function for generating reactive ui output based on 1,2,3 vars 
 #uvfunc creates a ui elements for two events, taking arguments id, text and total which is from 
 # original set variables
-uvfunc <- function(id, text, total){
+uvfunc <- function(id, text, total, val = 1){
         renderUI({
-                numericInput(id, label = text, min = 0,max = total,step = 1,value = 1)
+                numericInput(id, label = text, min = 0,max = total,step = 1,value = val)
         })
 }
 
@@ -90,13 +90,16 @@ theme_cc <- function(){
 motxt <- function(){
         p(
                 div(HTML(
-                        "First, please set total attendees, total faculty, and event duration of your event.
-                        <br>
-                        <br>
-                        Then, set the variables in Model 1 & 2 to compare possible carbon cost scenario for your event.
-                        <br>
-                        <br>
-                        As you change variables, graphs will update automatically."
+                        "<ul>
+                                <li>First, please set total attendees, total faculty, and event duration as global variables.</li>
+                                <br>
+                                <br>
+                                <li>Then, change the variables in Model A &amp; B to compare possible carbon cost scenario for your event.</li>
+                                <br>
+                                <br>
+                                <li>As default, 30 attendees, 5 faculty for 2 day course is set with model A where all participants are international versus only 2 in model B</li>
+                                <li>As you change variables, graphs will update automatically.</li>
+                        </ul>"
                 )
                         
                 )
