@@ -84,7 +84,6 @@ ui <- page_navbar(
         title = "Events carbon cost calculator",
         sidebar = sidebar(sidebar_acc),
         nav_panel(title = "Simulations",
-                br(),
                 layout_columns(costcard,tmap),
                 layout_columns(
                         value_box(class = "bg-warning",showcase = icon("a"),title = "Option A Total Carbon Cost",
@@ -95,7 +94,7 @@ ui <- page_navbar(
                                 value = textOutput("txt2ans"),
                                 p("kilograms of carbondioxide equivalent.")
                         ),
-                        value_box(class = "bg-info",showcase = icon("car-side"),title = "For comparison, driving a 4-seater, deisel car for 100km",
+                        value_box(class = "bg-info",showcase = icon("car-side"),title = "For comparison, driving a 4-seater, diesel car for 100km",
                                 value = "12.7",
                                 div(HTML("<p>kilograms of carbondioxide equivalent (<em>assuming average efficiency) <sup>[1]</sup></em></p>"))
                         )
@@ -103,8 +102,7 @@ ui <- page_navbar(
                 ),
         nav_panel(title = "User Guide & Assumptions",
                                   page_fillable(
-                                          br(),
-                                        card(height = "150px",
+                                        card(height = "200px",
                                                 card_header(h6("User Guide")),
                                                 card_body(mot2())
                                         ),

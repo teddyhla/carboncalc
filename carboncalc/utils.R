@@ -93,10 +93,12 @@ motxt <- function(){
                 div(HTML(
                         "<ul>
                                 <li>First, please set <b>total attendees, total faculty, and event duration</b> as global variables.</li>
+                                <br>
                                 <li>Then, change the variables in <b>Option A &amp; B </b> to compare possible carbon cost scenarios for your event.</li>
                                 <br>
                                 <br>
                                 <li>As default, 30 attendees, 5 faculty and 2-day course is set with option A as all participants travelling <b><em>internationally</em></b> versus <b><em>locally</em></b> in option B.</li>
+                                <br>
                                 <li>As you change the variables, graphs will update automatically.</li>
                         </ul>"
                 )
