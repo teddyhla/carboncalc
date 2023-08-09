@@ -35,7 +35,7 @@ tmap <- card(
 )
 
 sidebar_acc <- accordion(
-        open = c("Select global variables:","Variables for Model A:","Variables for Model B:"),
+        open = c("Select global variables:","Variables for Option A:","Variables for Option B:"),
         accordion_panel(
                 "Select global variables:",icon = icon("globe"),
                 numericInput("attnd",
@@ -57,13 +57,13 @@ sidebar_acc <- accordion(
                              value = 2)
         ),
         accordion_panel(
-                "Variables for Model A:",icon = icon("a"),
+                "Variables for Option A:",icon = icon("a"),
                 uiOutput("uiv3"),
                 uiOutput("uiv4"),
                 uiOutput("uiv5")
         ),
         accordion_panel(
-                "Variables for Model B:",icon = icon("b"),
+                "Variables for Option B:",icon = icon("b"),
                 uiOutput("uiv6"),
                 uiOutput("uiv7"),
                 uiOutput("uiv8")
@@ -79,11 +79,11 @@ ui <- page_navbar(
                 br(),
                 layout_columns(costcard,tmap),
                 layout_columns(
-                        value_box(class = "bg-warning",showcase = icon("a"),title = "Model A Total Carbon Cost",
+                        value_box(class = "bg-warning",showcase = icon("a"),title = "Option A Total Carbon Cost",
                                 value = textOutput("txt1ans"),
                                 p("kilograms of carbondioxide equivalent.")
                         ),
-                        value_box(class = "bg-primary",showcase = icon("b"),title = "Model B Total Carbon Cost",
+                        value_box(class = "bg-primary",showcase = icon("b"),title = "Option B Total Carbon Cost",
                                 value = textOutput("txt2ans"),
                                 p("kilograms of carbondioxide equivalent.")
                         ),
@@ -96,7 +96,7 @@ ui <- page_navbar(
         nav_panel(title = "User Guide & Assumptions",
                                   page_fillable(
                                           br(),
-                                        card(height = "800px",
+                                        card(height = "150px",
                                                 card_header(h6("User Guide")),
                                                 card_body(mot2())
                                         ),
@@ -109,7 +109,7 @@ ui <- page_navbar(
                 ),
         nav_panel(title = "About",
                         page_fillable(
-                                card(height = "800px",
+                                card(height = "200px",
                                      card_header(h6("Development Team")),
                                      card_body(ver1())
                                      
@@ -117,6 +117,7 @@ ui <- page_navbar(
                                 card(
                                         card_header(h6("References")),
                                         card_body(ref1())
+                                        
                                 )
                                         
                         )
@@ -157,17 +158,17 @@ server <- function(input, output) {
         # key logics - for see readme.md
         # make a reactive dataframe for event1 
         edf1 <- reactive({
-                gen(a= input$attnd,b=input$fac,c=input$p1_attnd,d =input$f1_attnd,e = input$duration,f= input$e1_accom,g = "Model A")
+                gen(a= input$attnd,b=input$fac,c=input$p1_attnd,d =input$f1_attnd,e = input$duration,f= input$e1_accom,g = "Option A")
         })
         #make a reactive dataframe for event2
         edf2 <- reactive({
-                gen(a= input$attnd, b= input$fac, c=input$p2_attnd, d=input$f2_attnd, e= input$duration,f=input$e2_accom, g="Model B")
+                gen(a= input$attnd, b= input$fac, c=input$p2_attnd, d=input$f2_attnd, e= input$duration,f=input$e2_accom, g="Option B")
         })
         
         daf <- reactive({
                 df <- rbind(edf1(),edf2())
                 df$breakdown <- as.factor(df$breakdown)
-                df$model <- as.factor(df$model)
+                df$option <- as.factor(df$option)
                 df
          })
         
@@ -178,7 +179,7 @@ server <- function(input, output) {
         #output plot1
         output$carboncostPlot <- renderPlotly({
                 
-                plot1 <-ggplot(df_filtered(), aes(x = breakdown, y= carbon_values, fill = model))+
+                plot1 <-ggplot(df_filtered(), aes(x = breakdown, y= carbon_values, fill = option))+
                               geom_col(position = "dodge") +
                               scale_fill_manual(values = c("#FFBF27","#0081FC"))+
                               labs(
@@ -192,7 +193,7 @@ server <- function(input, output) {
         #output plot2 
         output$tmap <- renderPlotly({
                 ab = daf()
-                plot2 <-ggplot(ab, aes(x = reorder(breakdown,-perc),y= perc, fill = model)) +
+                plot2 <-ggplot(ab, aes(x = reorder(breakdown,-perc),y= perc, fill = option)) +
                             geom_col(position = "dodge") + 
                             scale_fill_manual(values = c("#FFBF27","#0081FC"))+
                             coord_flip() +
@@ -209,11 +210,6 @@ server <- function(input, output) {
         # output texts
         output$txt1ans <- renderText(txrd(df = edf1))
         output$txt2ans <- renderText(txrd(df = edf2))
-        
-        #output for checking logic and testing. to be removed in launch.
-        output$test <- renderPrint(
-                daf()
-        )
 
 }
 

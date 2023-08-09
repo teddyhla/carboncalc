@@ -29,7 +29,7 @@ sumtravel <- function(x, y, shape, scale, constant){
 #gen function takes 7 arguments and generates a dataframe of variable and it pulls sumtravel function
 gen <- function(a, b, c, d, e, f, g){
         # a = total attendee, b = total fac, c = intl attendee , d = intl fac
-        # e = duration, f = no hotel rooms, g = model type
+        # e = duration, f = no hotel rooms, g = option type
         #varl <- list(a,b,c,d,e,f)
         #varl <- lapply(varl,function(x) ifelse(is.null(x),0,x))
         a <- ifelse(is.null(a),0,a)
@@ -38,14 +38,14 @@ gen <- function(a, b, c, d, e, f, g){
         d <- ifelse(is.null(d),0,d)
         e <- ifelse(is.null(e),0,e)
         f <- ifelse(is.null(f),0,f)
-        model <- g
+        option <- g
         breakdown <- c("local travel", "intl travel", "hotel stay","home")
         hotelc <- f * e * 10.4 # dur event * no hotel rooms * unit cost
         # local popn = total attendee - intl attendee & total fac - intl fac
         localc <- sumtravel(x= (a - c), y=(b - d), shape= 10, scale= 5, constant = 0.03549)
         intlc <- sumtravel(x = c, y = d , shape =1500, scale = 0.75, constant = 0.14062)
         carbon_values <- c(localc, intlc, hotelc, 0)
-        df <- data.frame(model, breakdown, carbon_values)
+        df <- data.frame(option, breakdown, carbon_values)
         df$perc <- round((df$carbon_values/sum(df$carbon_values)*100),2)
         df
 }
@@ -93,10 +93,10 @@ motxt <- function(){
                 div(HTML(
                         "<ul>
                                 <li>First, please set total attendees, total faculty, and event duration as global variables.</li>
-                                <li>Then, change the variables in Model A &amp; B to compare possible carbon cost scenario for your event.</li>
+                                <li>Then, change the variables in Option A &amp; B to compare possible carbon cost scenarios for your event.</li>
                                 <br>
                                 <br>
-                                <li>As default, 30 attendees, 5 faculty for 2 day course is set with model A where all participants are international versus only 2 in model B</li>
+                                <li>As default, 30 attendees, 5 faculty for 2 day course is set with all participants are international for option A versus only 2 in option B</li>
                                 <li>As you change variables, graphs will update automatically.</li>
                         </ul>"
                 )
@@ -110,7 +110,7 @@ mot2 <- function(){
                 div(HTML(
                         "<ul>
                                 <li>Please set global variables of 'total attendees', 'total faculty', and 'event duration'.</li>
-                                <li>Then, set 'the number of hotel rooms' and 'number of international attendees/faculty' in Model A &amp; B to allow comparison of carbon costs.</li>
+                                <li>Then, set 'the number of hotel rooms' and 'number of international attendees/faculty' in Option A &amp; B to allow comparison of carbon costs.</li>
                                 <li>The default option is set at 30 attendees, 5 faculty for 2 day course globally with model A where all participants are international versus only 2 in model B.</li>
                                 <li>As you change variables, graphs will update automatically.</li>
                         </ul>"
@@ -122,25 +122,12 @@ mot2 <- function(){
 
 ver1 <- function(){
         p(
-                div(HTML("
-                        <p>Version 1.0 & License GPL-3</p>
-                        <p> Development team: <a href=https://twitter.com/avkwong?lang=en> Dr Adrian Wong, <a href=https://twitter.com/m_zawadka?lang=en> Dr Mateus Zawadka, <a href=https://twitter.com/teddyhla?lang=en=GB> Dr Teddy Hla </p>
-                        <p> Any issues, please contact <a href= https://twitter.com/teddyhla?lang=en-GB> Teddy Hla </p>
-                        <p> Source code is available at github repository link <a href= https://github.com/teddyhla/carboncalc> Github repository. </p>
-                        <p> Cite this app as: Hla, Teddy Tun Win. (2023) <em>Event carbon cost calculator</em>. Available at: <a href=https://twhla.shinyapps.io/pocus_carbon_footprints_calculator/> link </p>
-                        ")    
+                div(HTML("<li>Version 1.0 & License GPL-3</li>
+                         <li>Conceived by <a href='https://twitter.com/avkwong?lang=en'>Dr Adrian Wong</a>, <a href='https://twitter.com/m_zawadka?lang=en'>Dr Mateusz Zawadka</a> and, <a href='https://twitter.com/teddyhla?lang=en-GB'> Dr Teddy Tun Win Hla</a></li>
+                         <li>Any issues, please contact Dr Teddy Tun Win Hla.</li>
+                         <li>Cite this app as: Hla,Teddy Tun Win(2023),<em>Events carbon cost calculator</em> <a href='https://www.github.com/teddyhla/carboncalc'> Github repository </a></li>")    
                 )
         )
-}
-# TEST - not used
-htx1 <- function(){
-        p("We FUNC that all international attendees are not sharing rooms in a hotel and not staying locally with friends and family.")
-}
-
-# for gen citation
-
-cite1 <- function(){
-        p(div(HTML("Hla, Teddy Tun Win. (2023) <em>Event carbon cost calculator</em>. Available at: <a href=https://twhla.shinyapps.io/pocus_carbon_footprints_calculator/>source link</a>.")))
 }
 
 # For assumptions
@@ -167,22 +154,22 @@ a1 <- function(){
 # For references
 ref1 <- function(){
         p(
-                div(HTML(
-                        "<p>1. Average CO2 emissions from new cars and new vans increased again in 2019; European Environment Agency. <a href=https://www.eea.europa.eu/highlights/average-co2-emissions-from-new-cars-vans-2019>https://www.eea.europa.eu/highlights/average-co2-emissions-from-new-cars-vans-2019</a>. Accessed: 3 Aug 2023</p>
-                        <br>
-                        <p>2. UK Government National Travel Survey 2021: Mode share, journey lengths and public transport use. <a href=https://www.gov.uk/government/statistics/national-travel-survey-2021/national-travel-survey-2021-mode-share-journey-lengths-and-public-transport-use> https://www.gov.uk/government/statistics/national-travel-survey-2021/national-travel-survey-2021-mode-share-journey-lengths-and-public-transport-use</a>. Accessed: 14 Jun 2023</p>
-                        <br>
-                        <p>3. Network Manager (2023) EUROCONTROL Data Snapshot, <a href=https://www.eurocontrol.int/our-data>https://www.eurocontrol.int/our-data</a>;. Accessed: 10 July 2023</p>
-                        <br>
-                        <p>4. Pl&ouml;tz P, Jakobsson N, Sprei F (2017) On the distribution of individual daily driving distances. Transportation Research Part B: Methodological 101:213&ndash;227. <a href=https://doi.org/10.1016/j.trb.2017.04.008>https://doi.org/10.1016/j.trb.2017.04.008 </a></p>
-                        <br>
-                        <p>5. Veloso M, Phithakkitnukoon S, Bento C, et al (2011) Exploratory Study of Urban Flow using Taxi Traces,&nbsp;<em>Proceedings of the 2011 international workshop on Trajectory data mining and analysisACM</em><span>, pp. 23</span></p>
-                        <br>
-                        <p><span>6. UK Government,</span>Greenhouse gas reporting: conversion factors 2022. (2022)In: GOV.UK. <a href=https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2022>https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2022</a>. Accessed 20 July 2023</p>
-                        <br>
-                        <p>7. European Union Air transport statistics. <a href=https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Air_transport_statistics> Link </a>. Accessed 4 Aug 2023. </p>
-                        "
-                        
-                ))
+                div(HTML("
+                        <ol>
+                        	<li> Average CO2 emissions from new cars and new vans increased again in 2019, European Environment Agency. <a href='https://www.eea.europa.eu/highlights/average-co2-emissions-from-new-cars-vans-2019> Source Link</a> Accessed: 3 Aug 2023</li>
+                        	<li> UK Government National Travel Survey 2021: Mode share, journey lengths and public transport use. <a href='https://www.gov.uk/government/statistics/national-travel-survey-2021/national-travel-survey-2021-mode-share'> Source Link </a> Accessed: 14 June 2023</li>
+                        	<li> Network Manager(2023) EUROCONTROL Data Snapshot, <a href='https://www.eurocontrol.int/our-data'> Source Link </a> Accessed: 15 June 2023 </li>
+                        	<li> Pl&ouml;tz P, Jacobsson N, Sprei F(2017) On the distribution of individual daily driving distances. Transporation Research Part B: Methdological 101:213&ndash;2227. <a href='https://doi.org/10.1016/j.tr.b2017.04.008'> Source Link </a> Accessed: 15 June 2023 </li>
+                        	<li> Veloso M, Phithakkitnukoon S, Bento C, et al (2011) Exploratory Study of Urban Flow using Taxi Traces, Proceedings of the 2011 international workshop on Trajectory data mining and analysisACM, pp. 23</li>
+                        	<li> UK Government,Greenhouse gas reporting: conversion factors 2022. (2022)In: GOV.UK.<a href='https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2022'>Source Link</a> Accessed 20 July 2023</li>
+                        	<li> European Union Air Transport statistics, <a href='https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Air_transport_statistics'> Source Link </a> Accessed 4 August 2023</li>
+                        </ol>
+                         
+                         ")
+                )
         )
 }
+
+
+
+#
