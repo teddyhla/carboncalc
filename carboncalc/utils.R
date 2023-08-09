@@ -87,17 +87,17 @@ theme_cc <- function(){
 ###################################
 
 
-# HTML text for setting Modal
+# HTML text for setting Modal at launch
 motxt <- function(){
         p(
                 div(HTML(
                         "<ul>
-                                <li>First, please set total attendees, total faculty, and event duration as global variables.</li>
-                                <li>Then, change the variables in Option A &amp; B to compare possible carbon cost scenarios for your event.</li>
+                                <li>First, please set <b>total attendees, total faculty, and event duration</b> as global variables.</li>
+                                <li>Then, change the variables in <b>Option A &amp; B </b> to compare possible carbon cost scenarios for your event.</li>
                                 <br>
                                 <br>
-                                <li>As default, 30 attendees, 5 faculty for 2 day course is set with all participants are international for option A versus only 2 in option B</li>
-                                <li>As you change variables, graphs will update automatically.</li>
+                                <li>As default, 30 attendees, 5 faculty and 2-day course is set with option A as all participants travelling <b><em>internationally</em></b> versus <b><em>locally</em></b> in option B.</li>
+                                <li>As you change the variables, graphs will update automatically.</li>
                         </ul>"
                 )
                         
@@ -105,6 +105,7 @@ motxt <- function(){
         )
 }
 
+# HTML text for second modal at user guide tab 
 mot2 <- function(){
         p(
                 div(HTML(
@@ -120,6 +121,7 @@ mot2 <- function(){
         )
 }
 
+# for about page
 ver1 <- function(){
         p(
                 div(HTML("<li>Version 1.0 & License GPL-3</li>
@@ -134,19 +136,15 @@ ver1 <- function(){
 a1 <- function(){
         p(
                 div(HTML("
-                        <p><em>1. <strong>Total number of people in the event</strong></em></p>
-                        <p>We assumed that an events is predominantly made up of attendees and faculty. Event organisors, sponsors are not included in the model.&nbsp;</p>
-                        <p><em><strong>2. Carbon cost of venue, equipment, waste processing</strong></em></p>
-                        <p>Given the carbon costs of venue, equipment and waste processing are likely to be identical irregardless of local / international attendees, we have not calculated seperately.&nbsp;</p>
-                        <p><em><strong>3. Type of transports</strong></em></p>
-                        <p>Based on European Union travel data, we assumed that all international travels are via 'flights' , travelling in 'economy class' as direct flights [2].</p>
-                        <p>Similarly, surface rail remains the most common mode of transport for average miles travelled per person per year [2,3]. Therefore, we assumed that 'surface rail' will be used for all local travel.&nbsp;</p>
-                        <p><em><strong>4. Typical distances</strong></em></p>
-                        <p>Travel distances and durations generally follow a 'gamma' distribution [3,4,5]. Based on typical flight and rail durations and distances in the European Union, we have modelled a local travel as a gamma distribution of distances with mean of 75km (in comaparison, London to Cambridge ~ 79km). Equally, for internaitonal travel, a gamma distribution of mean 1000km (in comparison, London to Milan ~ 1200km) is used.</p>
-                        <p><em><strong>5. Carbon cost breakdown</strong></em></p>
-                        <p>Carbon footprint is more accurately sub-divided into carbondioxide, methane, nitrousoxide levels [6]. For ease of use, we have followed a standard reporting of carbondioxide equivalent, an index combining all three components.</p>
-                        <p><em><strong>6. Same event variables having a different total value</strong></em></p>
-                        <p>Based on number of local / non-local attendees, a gamma distribution of travel distances with set mean is sampled. Therefore, the same event with same variables will have very similar but slightly different results. e.g., 50.6 vs. 49.7.</p>
+                        <ol>
+	                        <li> <b>Total Number of people in the event</b> : We assumed that in any event, attendees and faculty contributes to majority of the number of people. Event organisers, sponsors are 						    likely to be small and likely to remain constant irregardless of the locality of an event.</li>
+	                        <li> <b>Carbon cost of venue, equipments and waste processing</b> : We assumed that these are likely to be similar or constant irregardless of the locality of an event.</li> 
+	                        <li> <b>Types of transports</b> : Based on European Union travel data, we assumed that all international travels are via <em>'flights'</em>, travelling in <em>economy class</em> as <em> direct</em> flights <sup>[2]</sup>. Similarly, surface rail remains most common mode of transport for national travel for average miles per person per year <sup>[2,3]</sup>. We therefore assumed that <em>surface rail</em> will be used for local travels. </li>
+	                        <li><b>Typical distances</b>: Travel distances and durations follow a <em>gamma distribution</em> <sup>[3,4,5]</sup>. Based on typical flight and rail durations and distances in the European Union, we have modelled a <em>local</em> travel as a gamma distribution with a mean of 75km(in comparison, London to Cambridge or Milan to Lugano or Paris to Giverny). Equally, for <em>international</em> travel, a gamm distribution with a mean of 1000km (in comparison, London to Milan ~ 1200km, Paris to Berlin or Barcelona to Milan) is used.  </li>
+	                        <li><b>Carbon cost breakdown</b> : Carbon footprint is accurately subdivided into carbondioxide, methane, nitrousoxide levels <sup>[6]</sup> For ease of use, we have followed a standard reporting of carbondioxide equivalent, an index combining all three components.</li>
+	                        <li><b>Same input variables having similar but not identical carbon costs</b> Based on the input variables, the calculator generates a <em>random</em> gamma distribution of travel distances within the set mean. Therefore, output values will have very similar but slightly different results within the standard deviation. (e.g., 50.6 <em>vs</em> 49.7)</li>
+	
+                        </ol>
                         "))
         )
 }

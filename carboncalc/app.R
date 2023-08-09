@@ -8,10 +8,13 @@ library(shiny)
 library(ggplot2)
 library(plotly)
 library(bslib)
+
+# SOURCE a functions file
 source("utils.R")
 
-# UI elements
+# UI elements generating using bslib objects 
 
+#first plot as cost card 
 costcard <- card(
         full_screen = TRUE,
         card_header(
@@ -23,6 +26,7 @@ costcard <- card(
         )
 )
 
+#second plot as tmap
 tmap <- card(
         full_screen = TRUE,
         card_header(
@@ -34,6 +38,9 @@ tmap <- card(
         )
 )
 
+#side bar ui element which is in accordion
+#note if all accordions are closed, reactive variables are not generated.
+# note option A and B variables are dependent on reactive generation of UI
 sidebar_acc <- accordion(
         open = c("Select global variables:","Variables for Option A:","Variables for Option B:"),
         accordion_panel(
@@ -71,6 +78,7 @@ sidebar_acc <- accordion(
 )
 
 # UI
+#value boxes inserted to quantify the results
 ui <- page_navbar(
         fillable_mobile = FALSE,
         title = "Events carbon cost calculator",
@@ -87,7 +95,7 @@ ui <- page_navbar(
                                 value = textOutput("txt2ans"),
                                 p("kilograms of carbondioxide equivalent.")
                         ),
-                        value_box(class = "bg-info",showcase = icon("car-side"),title = "Driving a 4-seater, deisel car for 100km",
+                        value_box(class = "bg-info",showcase = icon("car-side"),title = "For comparison, driving a 4-seater, deisel car for 100km",
                                 value = "12.7",
                                 div(HTML("<p>kilograms of carbondioxide equivalent (<em>assuming average efficiency) <sup>[1]</sup></em></p>"))
                         )
